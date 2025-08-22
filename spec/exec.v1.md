@@ -207,6 +207,6 @@ python main.py --pane %5 --task ANALYZE_003 \
 ```
 
 ## References
-- [3-Step Handshake Protocol](../docs/3-STEP-HANDSHAKE.md)
-- [Adapter Architecture](../adapters/README.md)
 - [tmux Controller](../controllers/tmux_controller.py)
+- [Protocol Implementation](../core/protocol.py)
+- [Base Adapter](../adapters/base.py) (PR #20에서 구현 중)
