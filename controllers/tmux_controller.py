@@ -3,19 +3,10 @@ import time
 import shlex
 import base64
 from typing import Optional, Tuple
-from dataclasses import dataclass
 
 from core.protocol import parse_ack, parse_run, parse_eot
+from core.types import HandshakeResult
 from core.kpi import kpi  # KPI 추적 추가
-
-
-@dataclass
-class HandshakeResult:
-    """핸드셰이크 결과"""
-    success: bool
-    status: str
-    task_id: str
-    error: Optional[str] = None
 
 
 class TmuxController:

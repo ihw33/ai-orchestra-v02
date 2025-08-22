@@ -15,8 +15,11 @@ def main():
         description="AI Orchestra v02 - Minimal exec with 3-step handshake"
     )
     parser.add_argument(
+        "--adapter",
+        help="Adapter to use (tmux, claude_planner, etc.)"
+    )
+    parser.add_argument(
         "--pane", 
-        required=True, 
         help="tmux pane id (e.g., %%3, session:window.pane)"
     )
     parser.add_argument(
@@ -64,17 +67,55 @@ def main():
         sys.exit(0)
     
     try:
-        # tmux 컨트롤러 생성
-        controller = TmuxController(args.pane)
-        
-        # 3단계 핸드셰이크로 실행
-        result = controller.execute_with_handshake(
-            command=args.cmd,
-            task_id=args.task,
-            timeout_ack=args.timeout_ack,
-            timeout_run=args.timeout_run,
-            timeout_eot=args.timeout_eot
-        )
+        # 어댑터 사용 여부 확인
+        if args.adapter:
+            # 어댑터 모드
+            from adapters import get_adapter
+            from adapters.base import AdapterConfig
+            
+            adapter_class = get_adapter(args.adapter)
+            if not adapter_class:
+                # 동적 임포트 시도
+                if args.adapter == "tmux":
+                    from adapters.tmux_adapter import TmuxAdapter
+                    adapter_class = TmuxAdapter
+                else:
+                    print(f"❌ Unknown adapter: {args.adapter}", file=sys.stderr)
+                    sys.exit(1)
+            
+            config = AdapterConfig(
+                name=args.adapter,
+                timeout_ack=args.timeout_ack,
+                timeout_run=args.timeout_run,
+                timeout_eot=args.timeout_eot
+            )
+            
+            if args.adapter == "tmux":
+                if not args.pane:
+                    print("❌ --pane required for tmux adapter", file=sys.stderr)
+                    sys.exit(1)
+                adapter = adapter_class(config, args.pane)
+            else:
+                adapter = adapter_class(config)
+            
+            result = adapter.execute_with_handshake(
+                exec_line=args.cmd,
+                task_id=args.task
+            )
+        else:
+            # 기존 tmux 직접 모드 (하위 호환성)
+            if not args.pane:
+                print("❌ --pane required", file=sys.stderr)
+                sys.exit(1)
+            
+            controller = TmuxController(args.pane)
+            result = controller.execute_with_handshake(
+                command=args.cmd,
+                task_id=args.task,
+                timeout_ack=args.timeout_ack,
+                timeout_run=args.timeout_run,
+                timeout_eot=args.timeout_eot
+            )
         
         # 결과 처리
         if result.success:
