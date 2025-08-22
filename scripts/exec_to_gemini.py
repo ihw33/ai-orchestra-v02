@@ -88,17 +88,31 @@ def wait_for_token(pane_id: str, pattern: str, timeout: int = 10) -> tuple[bool,
 
 def execute_calc_via_gemini(exec_msg: str, pane_id: str) -> str:
     """CALC 명령을 Gemini를 통해 실행"""
+    import logging
+    logging.basicConfig(level=logging.INFO, 
+                       format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    
     # EXEC 파싱
-    parsed = parse_exec(exec_msg)
-    if not parsed:
+    try:
+        parsed = parse_exec(exec_msg)
+    except Exception as e:
+        logger.error(f"Failed to parse EXEC: {e}")
         raise ValueError(f"Invalid EXEC message: {exec_msg}")
     
-    verb = parsed.get("verb")
-    if verb != "CALC":
-        raise ValueError(f"Expected CALC verb, got: {verb}")
+    if parsed.verb != "CALC":
+        raise ValueError(f"Expected CALC verb, got: {parsed.verb}")
     
-    expr = parsed.get("expr", "").strip('"')
-    task_id = parsed.get("task", "UNKNOWN")
+    expr = parsed.params.get("expr", "").strip('"')
+    task_id = parsed.params.get("task", parsed.params.get("task_id", "UNKNOWN"))
+    
+    # 수식 유효성 검사
+    from core.exec_parser import ExecParser
+    parser = ExecParser()
+    valid, error = parser.validate_math_expression(expr)
+    if not valid:
+        logger.error(f"Invalid math expression: {error}")
+        raise ValueError(f"Invalid math expression: {error}")
     
     # 프롬프트 생성
     prompt = GEMINI_PROMPT_TEMPLATE.format(
@@ -129,9 +143,14 @@ def execute_calc_via_gemini(exec_msg: str, pane_id: str) -> str:
         raise TimeoutError(f"RUN timeout for task {task_id}")
     print("[OK] RUN received")
     
-    # 4. EOT 대기 및 결과 추출
+    # 4. EOT 대기 및 결과 추출 (더 유연한 패턴)
     print("[INFO] Waiting for @@EOT...")
-    eot_pattern = f"@@EOT\\s+id={re.escape(task_id)}\\s+status=OK\\s+result=([\\d\\.\\-]+)"
+    # @ 1~2개, 공백 허용, answer/result 키 허용
+    eot_pattern = (
+        f"\\s*@{{1,2}}EOT\\s+id={re.escape(task_id)}\\s+"
+        f"status\\s*=\\s*OK\\s+"
+        f"(?:answer|result)\\s*=\\s*([\\d\\.\\-]+)"
+    )
     success, match = wait_for_token(pane_id, eot_pattern, timeout=30)
     if not success:
         raise TimeoutError(f"EOT timeout for task {task_id}")
@@ -141,20 +160,60 @@ def execute_calc_via_gemini(exec_msg: str, pane_id: str) -> str:
     
     return result
 
+def execute_calc_mock(exec_msg: str) -> str:
+    """Mock 모드: 실제 Gemini 없이 안전하게 계산"""
+    import ast
+    import operator
+    
+    parsed = parse_exec(exec_msg)
+    expr = parsed.params.get("expr", "").strip('"')
+    
+    # ast를 사용한 안전한 평가
+    ops = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.USub: operator.neg,
+    }
+    
+    def eval_expr(node):
+        if isinstance(node, ast.Num):  # Python 3.7 이하
+            return node.n
+        elif isinstance(node, ast.Constant):  # Python 3.8+
+            return node.value
+        elif isinstance(node, ast.BinOp):
+            return ops[type(node.op)](eval_expr(node.left), eval_expr(node.right))
+        elif isinstance(node, ast.UnaryOp):
+            return ops[type(node.op)](eval_expr(node.operand))
+        else:
+            raise ValueError(f"Unsupported operation: {type(node)}")
+    
+    try:
+        tree = ast.parse(expr, mode='eval')
+        result = eval_expr(tree.body)
+        return str(result)
+    except Exception as e:
+        raise ValueError(f"Failed to evaluate expression: {e}")
+
 def main():
     parser = argparse.ArgumentParser(description="Execute EXEC commands via Gemini")
     parser.add_argument("--exec", required=True, help="EXEC message")
     parser.add_argument("--output", required=True, help="Output file path")
     parser.add_argument("--pane", help="Tmux pane ID (default from env GEMINI_PANE)")
+    parser.add_argument("--mock", action="store_true", help="Use mock mode (no real Gemini)")
     
     args = parser.parse_args()
     
-    # Pane ID 결정
-    pane_id = args.pane or os.getenv("GEMINI_PANE", "%1")
-    
     try:
-        # EXEC 실행
-        result = execute_calc_via_gemini(args.exec, pane_id)
+        if args.mock or os.getenv("MOCK_GEMINI") == "true":
+            # Mock 모드: 실제 Gemini 없이 계산
+            print("[INFO] Running in MOCK mode")
+            result = execute_calc_mock(args.exec)
+        else:
+            # 실제 Gemini 실행
+            pane_id = args.pane or os.getenv("GEMINI_PANE", "gemini-cli:0.0")
+            result = execute_calc_via_gemini(args.exec, pane_id)
         
         # 결과 저장
         with open(args.output, "w") as f:
@@ -165,6 +224,9 @@ def main():
         
     except Exception as e:
         print(f"[ERROR] {e}", file=sys.stderr)
+        # 디버깅을 위한 상세 에러 출력
+        import traceback
+        traceback.print_exc(file=sys.stderr)
         return 1
 
 if __name__ == "__main__":

@@ -48,12 +48,65 @@ class GeminiAdapter(BaseAdapter):
     def __init__(self, config: GeminiConfig):
         super().__init__(config)
         self.pane_id = config.pane_id
-        self.verify_pane_exists()
+        self.session_name = config.tmux_session if hasattr(config, 'tmux_session') else 'gemini-cli'
         
         # 로거 설정
         import logging
         self.logger = logging.getLogger(f"GeminiAdapter[{self.pane_id}]")
         self.logger.setLevel(logging.INFO)
+        
+        # 세션 확인 및 생성
+        self.ensure_session()
+        self.verify_pane_exists()
+    
+    def ensure_session(self):
+        """tmux 세션이 없으면 자동 생성"""
+        try:
+            # 세션 존재 확인
+            result = subprocess.run(
+                f"tmux has-session -t {self.session_name} 2>/dev/null",
+                shell=True,
+                capture_output=True
+            )
+            
+            if result.returncode != 0:
+                self.logger.info(f"Creating tmux session: {self.session_name}")
+                # 세션 생성
+                subprocess.run(
+                    f"tmux new-session -d -s {self.session_name}",
+                    shell=True,
+                    check=True
+                )
+                # Gemini CLI 시작
+                time.sleep(0.5)
+                subprocess.run(
+                    f"tmux send-keys -t {self.session_name}:0.0 'gemini' Enter",
+                    shell=True,
+                    check=True
+                )
+                time.sleep(1.0)  # CLI 초기화 대기
+                self.logger.info(f"Gemini CLI started in session {self.session_name}")
+                
+                # pane_id 업데이트 (세션:윈도우.pane 형식으로)
+                if self.pane_id.startswith('%'):
+                    self.pane_id = f"{self.session_name}:0.0"
+        except Exception as e:
+            self.logger.warning(f"Could not ensure session: {e}")
+    
+    def health_check(self) -> bool:
+        """세션 및 Gemini CLI 상태 확인"""
+        try:
+            # pane 출력 캡처
+            output = subprocess.check_output(
+                f"tmux capture-pane -t {self.pane_id} -p -S -3",
+                shell=True,
+                text=True,
+                stderr=subprocess.DEVNULL
+            )
+            # Gemini 프롬프트나 응답이 있는지 확인
+            return bool(output and len(output.strip()) > 0)
+        except Exception:
+            return False
     
     def verify_pane_exists(self):
         """tmux pane 존재 확인"""
@@ -87,26 +140,35 @@ class GeminiAdapter(BaseAdapter):
         except Exception as e:
             raise RuntimeError(f"Failed to verify tmux pane: {e}")
     
-    def send_to_pane(self, text: str) -> bool:
-        """tmux pane에 텍스트 전송"""
-        try:
-            # base64 인코딩으로 안전하게 전송
-            b64 = base64.b64encode(text.encode()).decode()
-            
-            # tmux 버퍼에 로드
-            cmd = f"printf '%s' '{b64}' | base64 -d | tmux load-buffer -"
-            subprocess.run(cmd, shell=True, check=True)
-            
-            # 버퍼 내용을 pane에 붙여넣기
-            subprocess.run(f"tmux paste-buffer -t {self.pane_id}", shell=True, check=True)
-            
-            # Enter 키 전송
-            subprocess.run(f"tmux send-keys -t {self.pane_id} Enter", shell=True, check=True)
-            
-            return True
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Failed to send to tmux: {e}")
-            return False
+    def send_to_pane(self, text: str, retry_count: int = 1) -> bool:
+        """tmux pane에 텍스트 전송 (재시도 포함)"""
+        for attempt in range(retry_count + 1):
+            try:
+                # 세션 상태 확인
+                if attempt > 0:
+                    self.ensure_session()
+                    time.sleep(0.5 * (2 ** attempt))  # 지수 백오프
+                
+                # base64 인코딩으로 안전하게 전송
+                b64 = base64.b64encode(text.encode()).decode()
+                
+                # tmux 버퍼에 로드
+                cmd = f"printf '%s' '{b64}' | base64 -d | tmux load-buffer -"
+                subprocess.run(cmd, shell=True, check=True)
+                
+                # 버퍼 내용을 pane에 붙여넣기
+                subprocess.run(f"tmux paste-buffer -t {self.pane_id}", shell=True, check=True)
+                
+                # Enter 키 전송
+                subprocess.run(f"tmux send-keys -t {self.pane_id} Enter", shell=True, check=True)
+                
+                return True
+            except subprocess.CalledProcessError as e:
+                if attempt == retry_count:
+                    self.logger.error(f"Failed to send to tmux after {retry_count + 1} attempts: {e}")
+                    return False
+                self.logger.warning(f"Attempt {attempt + 1} failed, retrying...")
+        return False
     
     def capture_output(self, lines: int = 200) -> str:
         """tmux pane 출력 캡처"""
@@ -207,8 +269,13 @@ class GeminiAdapter(BaseAdapter):
         self.logger.debug(f"Waiting for EOT (timeout={self.config.timeout_eot}s)")
         
         if verb == "CALC":
-            # CALC의 경우 result 값 추출 (앞에 특수문자나 공백이 있을 수 있음)
-            eot_pattern = f"\\s*@@?EOT\\s+id={re.escape(task_id)}\\s+status=OK\\s+result=([\\d\\.\\-]+)"
+            # CALC의 경우 result 값 추출 - 더 유연한 패턴
+            # @ 1~2개, 공백 허용, answer/result 키 허용
+            eot_pattern = (
+                f"\\s*@{{1,2}}EOT\\s+id={re.escape(task_id)}\\s+"
+                f"status\\s*=\\s*OK\\s+"
+                f"(?:answer|result)\\s*=\\s*([\\d\\.\\-]+)\\s*"
+            )
             match = self.wait_for_pattern(eot_pattern, self.config.timeout_eot)
             
             if match:
@@ -220,8 +287,8 @@ class GeminiAdapter(BaseAdapter):
                     task_id=task_id
                 )
         else:
-            # 일반 명령
-            eot_pattern = f"@@EOT\\s+id={re.escape(task_id)}\\s+status=(\\w+)"
+            # 일반 명령 - 더 유연한 패턴
+            eot_pattern = f"\\s*@{{1,2}}EOT\\s+id={re.escape(task_id)}\\s+status\\s*=\\s*(\\w+)"
             match = self.wait_for_pattern(eot_pattern, self.config.timeout_eot)
             
             if match:

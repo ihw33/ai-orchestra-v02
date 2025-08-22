@@ -1,15 +1,15 @@
-name: Issue to Gemini Calculator
+name: Issue to Gemini Calculator (Mock for Default Runner)
 
 on:
   issues:
     types: [opened]
 
 jobs:
-  calculate:
-    # Self-hosted macOS 러너에서만 실행 (tmux 필요)
-    runs-on: [self-hosted, macOS]
-    # 기본 러너에서는 실행하지 않음
-    if: ${{ !contains(github.event.issue.labels.*.name, 'skip-auto') }}
+  calculate-mock:
+    # 기본 GitHub 호스팅 러너에서 실행 (tmux 없이)
+    runs-on: ubuntu-latest
+    # self-hosted 러너가 없을 때만 실행
+    if: ${{ !contains(github.event.issue.labels.*.name, 'skip-auto') && !contains(github.event.issue.labels.*.name, 'use-real-gemini') }}
     
     steps:
       - name: Checkout
@@ -31,7 +31,7 @@ jobs:
           if echo "$ISSUE_TITLE" | grep -E "[0-9+\-*/]"; then
             # 제목에서 수식 추출 (예: "1+1은 무엇입니까" → "1+1")
             EXPR=$(echo "$ISSUE_TITLE" | sed 's/[^0-9+\-*/()]//g')
-            EXEC_MSG="CALC expr=\"$EXPR\" target=gemini task=ISSUE-$ISSUE_NUM"
+            EXEC_MSG="CALC expr=\"$EXPR\" target=mock task_id=ISSUE-$ISSUE_NUM"
             echo "exec_msg=$EXEC_MSG" >> $GITHUB_OUTPUT
             echo "task_id=ISSUE-$ISSUE_NUM" >> $GITHUB_OUTPUT
             echo "expression=$EXPR" >> $GITHUB_OUTPUT
@@ -45,29 +45,17 @@ jobs:
         run: |
           pip install -r requirements.txt
       
-      - name: Ensure tmux session exists
-        if: steps.parse.outputs.should_process == 'true'
-        run: |
-          # tmux 세션 확인 및 생성
-          if ! tmux has-session -t gemini-cli 2>/dev/null; then
-            echo "Creating tmux session gemini-cli"
-            tmux new-session -d -s gemini-cli
-            sleep 0.5
-            tmux send-keys -t gemini-cli:0.0 'gemini' Enter
-            sleep 1
-          fi
-          echo "Tmux session ready"
-      
-      - name: Execute via OrchestrEX
+      - name: Execute via OrchestrEX (Mock Mode)
         if: steps.parse.outputs.should_process == 'true'
         id: execute
         env:
-          GEMINI_PANE: "gemini-cli:0.0"
+          MOCK_GEMINI: "true"
         run: |
-          # 실행 로그 저장
+          # Mock 모드로 실행 (실제 Gemini 없이 계산)
           python scripts/exec_to_gemini.py \
             --exec "${{ steps.parse.outputs.exec_msg }}" \
-            --output /tmp/result.txt 2>&1 | tee /tmp/execution.log
+            --output /tmp/result.txt \
+            --mock 2>&1 | tee /tmp/execution.log
           
           # 결과 확인
           if [ -f /tmp/result.txt ]; then
@@ -81,7 +69,7 @@ jobs:
         if: always() && steps.parse.outputs.should_process == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: gemini-execution-logs
+          name: gemini-mock-execution-logs
           path: |
             /tmp/execution.log
             /tmp/result.txt
@@ -101,7 +89,7 @@ jobs:
             
             let comment_body;
             if (success) {
-              comment_body = `## 🤖 Gemini 계산 결과
+              comment_body = `## 🤖 계산 결과 (Mock Mode)
               
 **문제**: ${expression}
 **답**: **${result}**
@@ -109,9 +97,10 @@ jobs:
 ---
 *EXEC: \`${exec_msg}\`*
 *Task ID: ${task_id}*
-*🎯 3-Step Handshake 성공*`;
+*⚠️ Mock 모드로 실행됨 (실제 Gemini 없이 계산)*
+*실제 Gemini를 사용하려면 self-hosted 러너가 필요합니다.*`;
             } else {
-              comment_body = `⚠️ 계산 실패: Gemini와 통신할 수 없습니다.
+              comment_body = `⚠️ 계산 실패
               
 디버그 정보는 [Actions 아티팩트](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})에서 확인하세요.`;
             }
