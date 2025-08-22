@@ -1,0 +1,17 @@
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-timeout>=2.1.0
+
+# Async support
+asyncio>=3.4.3
+
+# iTerm2 control (optional, macOS only)
+# iterm2>=1.18
+
+# Logging
+structlog>=23.1.0
+
+# Development tools
+black>=23.3.0
+flake8>=6.0.0
