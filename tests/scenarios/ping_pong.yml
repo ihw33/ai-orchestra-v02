@@ -1,0 +1,54 @@
+scenarios:
+  - name: basic_success
+    pane: "%3"
+    task_id: t_basic
+    command: "printf '@@ACK id=t_basic\\n@@RUN id=t_basic\\n@@EOT id=t_basic status=OK\\n'"
+    expected: OK
+    timeout_ack: 2
+    timeout_run: 2
+    timeout_eot: 2
+
+  - name: missing_eot
+    pane: "%3"
+    task_id: t_no_eot
+    command: "printf '@@ACK id=t_no_eot\\n@@RUN id=t_no_eot\\n'"
+    expected: NO_EOT
+    timeout_ack: 1
+    timeout_run: 1
+    timeout_eot: 1
+
+  - name: out_of_order
+    pane: "%3"
+    task_id: t_order
+    command: "printf '@@RUN id=t_order\\n@@ACK id=t_order\\n'"
+    expected: NO_EOT
+    timeout_ack: 1
+    timeout_run: 1
+    timeout_eot: 1
+
+  - name: duplicate_tokens
+    pane: "%3"
+    task_id: t_dup
+    command: "printf '@@ACK id=t_dup\\n@@ACK id=t_dup\\n@@RUN id=t_dup\\n@@EOT id=t_dup status=OK\\n'"
+    expected: OK
+    skip_idempotency: true
+
+  - name: noisy_output
+    pane: "%3"
+    task_id: t_noise
+    command: "printf 'DEBUG: Starting\\n@@ACK id=t_noise\\nINFO: Processing\\n@@RUN id=t_noise\\n@@EOT id=t_noise status=OK\\n'"
+    expected: OK
+
+  - name: special_chars
+    pane: "%3"
+    task_id: t_special
+    command: "printf '@@ACK id=t_special\\n@@RUN id=t_special\\n@@EOT id=t_special status=OK\\n'"
+    expected: OK
+    skip_idempotency: true
+
+  - name: idempotency_check
+    pane: "%3"
+    task_id: t_idem
+    command: "printf '@@ACK id=t_idem\\n@@RUN id=t_idem\\n@@EOT id=t_idem status=OK\\n'"
+    expected: OK
+    # Run twice with same task_id to test idempotency
