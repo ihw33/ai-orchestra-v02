@@ -4,7 +4,8 @@ Tmux adapter for testing and simulation
 
 from typing import Optional
 from .base import BaseAdapter, AdapterConfig
-from controllers.tmux_controller import TmuxController, HandshakeResult
+from controllers.tmux_controller import TmuxController
+from core.types import HandshakeResult
 
 
 class TmuxAdapter(BaseAdapter):

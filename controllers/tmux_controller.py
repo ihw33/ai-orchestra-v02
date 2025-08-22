@@ -3,18 +3,9 @@ import time
 import shlex
 import base64
 from typing import Optional, Tuple
-from dataclasses import dataclass
 
 from core.protocol import parse_ack, parse_run, parse_eot
-
-
-@dataclass
-class HandshakeResult:
-    """핸드셰이크 결과"""
-    success: bool
-    status: str
-    task_id: str
-    error: Optional[str] = None
+from core.types import HandshakeResult
 
 
 class TmuxController:

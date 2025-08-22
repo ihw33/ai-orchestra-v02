@@ -5,7 +5,8 @@ Base adapter interface for AI Orchestra v02
 from abc import ABC, abstractmethod
 from typing import Optional
 from dataclasses import dataclass
-from controllers.tmux_controller import HandshakeResult
+from core.types import HandshakeResult
+from core.exec_parser import parse_exec
 
 
 @dataclass
@@ -41,20 +42,12 @@ class BaseAdapter(ABC):
         pass
     
     def parse_exec(self, exec_line: str) -> dict:
-        """EXEC 명령 파싱"""
-        params = {}
-        parts = exec_line.split()
-        
-        # 첫 단어는 동사 (IMPLEMENT, TEST 등)
-        if parts:
-            params['verb'] = parts[0]
-        
-        # 나머지는 key=value 형식
-        for part in parts[1:]:
-            if '=' in part:
-                key, value = part.split('=', 1)
-                params[key] = value
-        
+        """EXEC 명령 파싱 - 공용 파서 사용"""
+        command = parse_exec(exec_line)
+        params = {'verb': command.verb}
+        params.update(command.params)
+        if command.payload:
+            params['payload'] = command.payload
         return params
     
     def __repr__(self) -> str:
