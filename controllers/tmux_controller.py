@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 from dataclasses import dataclass
 
 from core.protocol import parse_ack, parse_run, parse_eot
+from core.kpi import kpi  # KPI 추적 추가
 
 
 @dataclass
@@ -186,7 +187,7 @@ class TmuxController:
         timeout_eot: float = 30
     ) -> HandshakeResult:
         """
-        3단계 핸드셰이크로 명령 실행
+        3단계 핸드셰이크로 명령 실행 (KPI 추적 포함)
         
         Args:
             command: 실행할 명령
@@ -198,12 +199,17 @@ class TmuxController:
         Returns:
             HandshakeResult 객체
         """
+        start_time = time.time()
+        
         # 명령 전송
         self.send_keys(command)
         
         # 1. ACK 대기
         success, msg = self.wait_for_token(task_id, "ACK", timeout_ack)
+        kpi.record(kind='handshake', phase='ack', success=success, task_id=task_id)
+        
         if not success:
+            kpi.record(kind='error', error_type='ack_timeout', success=False, task_id=task_id)
             return HandshakeResult(
                 success=False,
                 status="FAILED",
@@ -213,7 +219,10 @@ class TmuxController:
         
         # 2. RUN 대기
         success, msg = self.wait_for_token(task_id, "RUN", timeout_run)
+        kpi.record(kind='handshake', phase='run', success=success, task_id=task_id)
+        
         if not success:
+            kpi.record(kind='error', error_type='run_timeout', success=False, task_id=task_id)
             return HandshakeResult(
                 success=False,
                 status="FAILED",
@@ -223,7 +232,12 @@ class TmuxController:
         
         # 3. EOT 대기
         success, status = self.wait_for_token(task_id, "EOT", timeout_eot)
+        duration_ms = int((time.time() - start_time) * 1000)
+        kpi.record(kind='handshake', phase='eot', success=success, 
+                  duration_ms=duration_ms, task_id=task_id)
+        
         if not success:
+            kpi.record(kind='error', error_type='eot_timeout', success=False, task_id=task_id)
             return HandshakeResult(
                 success=False,
                 status="TIMEOUT",
