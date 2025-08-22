@@ -2,9 +2,7 @@
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 pytest-timeout>=2.1.0
-
-# Async support
-asyncio>=3.4.3
+pytest-mock>=3.11.0
 
 # iTerm2 control (optional, macOS only)
 # iterm2>=1.18

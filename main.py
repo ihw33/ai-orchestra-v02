@@ -1,69 +1,95 @@
 #!/usr/bin/env python3
 """
-AI Orchestra v02 - Main entry point for smoke testing
+AI Orchestra v02 - Main CLI for smoke testing
 """
 
 import argparse
 import sys
-import time
-
-
-def smoke_test(pane_id, task_id, command):
-    """
-    Simple smoke test to verify basic communication
-    
-    Args:
-        pane_id: tmux pane identifier (e.g., %3)
-        task_id: Task identifier for tracking
-        command: Command to execute
-    """
-    print(f"🚀 Starting smoke test")
-    print(f"   Pane: {pane_id}")
-    print(f"   Task: {task_id}")
-    print(f"   Command: {command}")
-    
-    # TODO: Integrate with actual tmux_controller once implemented
-    print("\n⏳ Simulating command execution...")
-    time.sleep(1)
-    
-    # Expected output simulation
-    print(f"\n📥 Expected tokens:")
-    print(f"   @@ACK id={task_id}")
-    print(f"   @@RUN id={task_id}")
-    print(f"   @@EOT id={task_id} status=OK")
-    
-    print("\n✅ Smoke test complete (simulation mode)")
-    return 0
+from controllers.tmux_controller import TmuxController
+from core.idempotency import check_duplicate, save_result, get_cached_result
+from core.retry import retry_with_backoff
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="AI Orchestra v02 - Smoke Test Runner"
+        description="AI Orchestra v02 - Minimal exec with 3-step handshake"
     )
     parser.add_argument(
-        '--pane',
-        required=True,
-        help='tmux pane ID (e.g., %%3)'
+        "--pane", 
+        required=True, 
+        help="tmux pane id (e.g., %%3, session:window.pane)"
     )
     parser.add_argument(
-        '--task',
-        required=True,
-        help='Task identifier'
+        "--task", 
+        required=True, 
+        help="task id (idempotency key)"
     )
     parser.add_argument(
-        '--cmd',
-        required=True,
-        help='Command to execute'
+        "--cmd", 
+        required=True, 
+        help="command to execute"
+    )
+    parser.add_argument(
+        "--timeout-ack", 
+        type=float, 
+        default=5.0,
+        help="ACK timeout in seconds (default: 5)"
+    )
+    parser.add_argument(
+        "--timeout-run", 
+        type=float, 
+        default=10.0,
+        help="RUN timeout in seconds (default: 10)"
+    )
+    parser.add_argument(
+        "--timeout-eot", 
+        type=float, 
+        default=30.0,
+        help="EOT timeout in seconds (default: 30)"
+    )
+    parser.add_argument(
+        "--skip-idempotency",
+        action="store_true",
+        help="Skip idempotency check"
     )
     
     args = parser.parse_args()
     
+    # 멱등성 체크
+    if not args.skip_idempotency and check_duplicate(args.task):
+        cached = get_cached_result(args.task)
+        print(f"✅ Task {args.task} already completed (cached)")
+        if cached:
+            print(f"   Result: {cached}")
+        sys.exit(0)
+    
     try:
-        return smoke_test(args.pane, args.task, args.cmd)
+        # tmux 컨트롤러 생성
+        controller = TmuxController(args.pane)
+        
+        # 3단계 핸드셰이크로 실행
+        result = controller.execute_with_handshake(
+            command=args.cmd,
+            task_id=args.task,
+            timeout_ack=args.timeout_ack,
+            timeout_run=args.timeout_run,
+            timeout_eot=args.timeout_eot
+        )
+        
+        # 결과 처리
+        if result.success:
+            print(f"✅ EOT OK ({result.status})")
+            if not args.skip_idempotency:
+                save_result(args.task, result.status)
+            sys.exit(0)
+        else:
+            print(f"❌ EOT FAILED ({result.error})", file=sys.stderr)
+            sys.exit(1)
+            
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
-        return 1
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

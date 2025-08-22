@@ -1,0 +1,36 @@
+- name: epic
+  color: BFD4F2
+  description: Epic level work
+- name: priority-high
+  color: D73A4A
+  description: High priority
+- name: mvp
+  color: C2E0C6
+  description: MVP task
+- name: orchestra:phase1
+  color: 1D76DB
+  description: Phase 1 (MVP)
+- name: bug
+  color: D73A4A
+  description: Bug
+- name: area:core
+  color: 0E8A16
+  description: Core modules
+- name: area:protocol
+  color: 0E8A16
+  description: Protocol/handshake
+- name: area:retry
+  color: 0E8A16
+  description: Retry/Backoff
+- name: area:idempotency
+  color: 0E8A16
+  description: Idempotency
+- name: area:controllers
+  color: 0E8A16
+  description: Controllers
+- name: area:tmux
+  color: 0E8A16
+  description: tmux/iTerm2
+- name: tests
+  color: 5319E7
+  description: Tests

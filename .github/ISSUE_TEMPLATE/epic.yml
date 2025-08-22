@@ -1,0 +1,37 @@
+name: "Epic"
+description: 상위 목표/마일스톤을 정의합니다.
+title: "[Epic] <제목>"
+labels: ["epic", "priority-high"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 🎯 목표
+      description: 어떤 가치를 달성하나요?
+      placeholder: 예) 챗봇 간 안정 통신(ACK/RUN/EOT) 확보
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 📋 범위(MVP)
+      description: 체크박스로 핵심 항목을 열거하세요.
+      value: |
+        - [ ] 3단계 핸드셰이크
+        - [ ] 멱등키
+        - [ ] 지수 백오프
+        - [ ] tmux/iTerm2 제어
+        - [ ] 기본 통신 테스트
+  - type: textarea
+    id: milestones
+    attributes:
+      label: 🛣️ 마일스톤
+      value: |
+        - Phase 1: 통신 안정성 (MVP)
+        - Phase 2: 추가 안정성 (서킷브레이커, DLQ)
+        - Phase 3: 업무 프로세스 (v03)
+  - type: textarea
+    id: notes
+    attributes:
+      label: 📎 비고
+      placeholder: 기타 메모

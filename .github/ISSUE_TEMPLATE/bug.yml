@@ -1,0 +1,40 @@
+name: "Bug Report"
+description: 재현 가능한 버그를 보고합니다.
+title: "[Bug] <증상 요약>"
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 🐞 버그 설명
+      placeholder: 무엇이 잘못되었나요?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 🔁 재현 절차
+      value: |
+        1. 명령: ...
+        2. 기대: @@EOT status=OK
+        3. 실제: ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📜 관련 로그/토큰
+      description: 민감정보는 마스킹해주세요.
+  - type: dropdown
+    id: area
+    attributes:
+      label: 🧩 영향 영역
+      options:
+        - core/protocol
+        - core/retry
+        - core/idempotency
+        - controllers/tmux
+        - 기타
+  - type: input
+    id: version
+    attributes:
+      label: 🔢 버전/커밋
+      placeholder: e.g. abc1234

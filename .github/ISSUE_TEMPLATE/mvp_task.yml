@@ -1,0 +1,32 @@
+name: "MVP Task"
+description: v02 통신 안정성 관련 단일 작업
+title: "[MVP] <작업 제목>"
+labels: ["orchestra:phase1", "mvp"]
+body:
+  - type: input
+    id: area
+    attributes:
+      label: 🧩 영역
+      description: 예) core/protocol, controllers/tmux 등
+      placeholder: core/protocol
+  - type: textarea
+    id: desc
+    attributes:
+      label: ✍️ 작업 설명
+      placeholder: 무엇을 어떻게?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ 완료 조건
+      options:
+        - label: "@@ACK/@@RUN/@@EOT 토큰 정확"
+        - label: 멱등키/재시도 공용 유틸 사용
+        - label: tmux pane_id 고정 사용
+        - label: 테스트 통과(pytest -q)
+  - type: textarea
+    id: test
+    attributes:
+      label: 🧪 테스트 시나리오
+      placeholder: 단위/통합/스모크 요약

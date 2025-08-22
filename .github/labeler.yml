@@ -1,0 +1,26 @@
+# 파일 경로 기반 자동 라벨
+"area:protocol":
+  - "core/protocol.py"
+"area:idempotency":
+  - "core/idempotency.py"
+"area:retry":
+  - "core/retry.py"
+"area:controllers":
+  - "controllers/**"
+"area:tmux":
+  - "controllers/**/tmux*"
+"tests":
+  - "tests/**"
+
+# 키워드 기반 (제목/본문)
+"mvp":
+  - any:
+      - title: "\\bMVP\\b"
+      - body: "\\bPhase 1\\b|\\bmvp\\b"
+"epic":
+  - any:
+      - title: "^\\[Epic\\]"
+"bug":
+  - any:
+      - title: "^\\[Bug\\]"
+      - body: "\\bEOT\\s+TIMEOUT\\b|\\bNO_ACK\\b|\\bNO_RUN\\b"
