@@ -35,14 +35,14 @@ orchestrex/
 
 ## 📋 Phase 1 - MVP (진행 중)
 
-- [ ] [#2](https://github.com/ihw33/orchestrex/issues/2) 프로젝트 기본 구조
-- [ ] [#3](https://github.com/ihw33/orchestrex/issues/3) 3단계 핸드셰이크 프로토콜
-- [ ] [#4](https://github.com/ihw33/orchestrex/issues/4) 멱등성 시스템
-- [ ] [#5](https://github.com/ihw33/orchestrex/issues/5) 재시도 메커니즘
-- [ ] [#6](https://github.com/ihw33/orchestrex/issues/6) tmux 컨트롤러
-- [ ] [#7](https://github.com/ihw33/orchestrex/issues/7) Ping-Pong 테스트
+- [ ] [#2](https://github.com/ihw33/ai-orchestra-v02/issues/2) 프로젝트 기본 구조
+- [ ] [#3](https://github.com/ihw33/ai-orchestra-v02/issues/3) 3단계 핸드셰이크 프로토콜
+- [ ] [#4](https://github.com/ihw33/ai-orchestra-v02/issues/4) 멱등성 시스템
+- [ ] [#5](https://github.com/ihw33/ai-orchestra-v02/issues/5) 재시도 메커니즘
+- [ ] [#6](https://github.com/ihw33/ai-orchestra-v02/issues/6) tmux 컨트롤러
+- [ ] [#7](https://github.com/ihw33/ai-orchestra-v02/issues/7) Ping-Pong 테스트
 
-> 전체 진행 상황은 [Epic #1](https://github.com/ihw33/orchestrex/issues/1)에서 확인하세요.
+> 전체 진행 상황은 [Epic #1](https://github.com/ihw33/ai-orchestra-v02/issues/1)에서 확인하세요.
 
 ## 🚀 Quick Start
 
@@ -52,7 +52,7 @@ orchestrex/
 # 1) 의존성 설치
 pip install -r requirements.txt
 
-# 2) OrchestrEX 실행 (3-step handshake)
+# 2) 3-step handshake 실행
 python main.py --pane %3 --task t1 --cmd "printf '@@ACK id=t1\n@@RUN id=t1\n@@EOT id=t1 status=OK\n'"
 
 # 3) 테스트 실행
@@ -65,12 +65,12 @@ pytest -q
 - **통신 안정성 먼저, 업무 프로세스는 나중**
 - **실제 문제 발생 시 해결**
 
-## ✅ PR 체크(요약)
+## ✅ PR 체크리스트
 
-- [ ] `@@ACK`/`@@RUN`/`@@EOT` 토큰 정확
-- [ ] 멱등키/재시도 공용 유틸 사용
+- [ ] 3-Step Handshake 토큰 (`@@ACK`/`@@RUN`/`@@EOT`) 정확
+- [ ] 멱등성 키/재시도 공용 유틸 사용
 - [ ] tmux pane_id 고정 사용
-- [ ] 테스트(단위/스모크) 통과
+- [ ] 테스트 통과 (단위/통합)
 
 ## 📝 License
 
