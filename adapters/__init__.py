@@ -24,6 +24,26 @@ def list_adapters() -> list[str]:
     return list(_registry.keys())
 
 
+def _init_adapters():
+    """기본 어댑터 초기화"""
+    # Lazy import to avoid circular dependencies
+    try:
+        from .tmux_adapter import TmuxAdapter
+        register_adapter("tmux", TmuxAdapter)
+    except ImportError:
+        pass
+    
+    try:
+        from .gemini_adapter import GeminiAdapter
+        register_adapter("gemini", GeminiAdapter)
+    except ImportError:
+        pass
+
+
+# 모듈 로드 시 초기화
+_init_adapters()
+
+
 __all__ = [
     'BaseAdapter',
     'register_adapter',

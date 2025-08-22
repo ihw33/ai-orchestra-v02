@@ -1,0 +1,75 @@
+name: Issue to Gemini Calculator
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  calculate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - name: Parse Issue to EXEC
+        id: parse
+        run: |
+          # 이슈 제목과 번호 추출
+          ISSUE_NUM="${{ github.event.issue.number }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          
+          # EXEC 메시지 생성 (계산 요청인 경우)
+          if echo "$ISSUE_TITLE" | grep -E "[0-9+\-*/]"; then
+            # 제목에서 수식 추출 (예: "1+1은 무엇입니까" → "1+1")
+            EXPR=$(echo "$ISSUE_TITLE" | sed 's/[^0-9+\-*/()]//g')
+            EXEC_MSG="CALC expr=\"$EXPR\" target=gemini task=ISSUE-$ISSUE_NUM"
+            echo "exec_msg=$EXEC_MSG" >> $GITHUB_OUTPUT
+            echo "task_id=ISSUE-$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "expression=$EXPR" >> $GITHUB_OUTPUT
+            echo "should_process=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_process=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install Dependencies
+        if: steps.parse.outputs.should_process == 'true'
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Execute via OrchestrEX
+        if: steps.parse.outputs.should_process == 'true'
+        id: execute
+        env:
+          GEMINI_PANE: "%1"  # 실제 Gemini pane ID로 교체 필요
+        run: |
+          python scripts/exec_to_gemini.py \
+            --exec "${{ steps.parse.outputs.exec_msg }}" \
+            --output /tmp/result.txt
+      
+      - name: Comment Result
+        if: steps.parse.outputs.should_process == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f /tmp/result.txt ]; then
+            RESULT=$(cat /tmp/result.txt)
+            gh issue comment ${{ github.event.issue.number }} \
+              --body "## 🤖 Gemini 계산 결과
+              
+**문제**: ${{ steps.parse.outputs.expression }}
+**답**: **$RESULT**
+
+---
+*EXEC: \`${{ steps.parse.outputs.exec_msg }}\`*
+*Task ID: ${{ steps.parse.outputs.task_id }}*
+*🎯 3-Step Handshake 성공*"
+          else
+            gh issue comment ${{ github.event.issue.number }} \
+              --body "⚠️ 계산 실패: Gemini와 통신할 수 없습니다."
+          fi

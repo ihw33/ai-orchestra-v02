@@ -32,7 +32,7 @@ class ExecParser:
     ALLOWED_VERBS = {
         "TEST", "IMPLEMENT", "ANALYZE", "REVIEW",
         "DEPLOY", "MONITOR", "ROLLBACK", "REPORT",
-        "TRIGGER", "SYNC"
+        "TRIGGER", "SYNC", "CALC", "TRANSLATE", "SUMMARIZE"
     }
     
     # 파라미터 패턴: key=value 또는 key="quoted value"
