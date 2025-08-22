@@ -127,6 +127,7 @@ def test_gemini_adapter():
     try:
         # Mock 설정으로 어댑터 생성 테스트
         config = GeminiConfig(
+            name="test-gemini",
             timeout_ack=5,
             timeout_run=10,
             timeout_eot=30,

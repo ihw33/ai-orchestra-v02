@@ -172,8 +172,8 @@ class ExecParser:
         if open_count != close_count:
             return False, "Unbalanced parentheses"
         
-        # 연속된 연산자 체크
-        if re.search(r'[+\-*/]{2,}', expr.replace('--', '').replace('++', '')):
+        # 연속된 연산자 체크 (++, -- 포함)
+        if re.search(r'[+\-*/]{2,}', expr):
             return False, "Consecutive operators detected"
         
         # 파이썬 ast를 사용한 안전한 평가 가능 여부 체크
