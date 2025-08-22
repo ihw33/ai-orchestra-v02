@@ -13,6 +13,7 @@ class HandshakeResult:
     status: Optional[str] = None
     error: Optional[str] = None
     duration: Optional[float] = None
+    task_id: Optional[str] = None
     
     def __bool__(self) -> bool:
         return self.success
