@@ -54,9 +54,10 @@ def test_exec_handshake_no_ack(mocker):
 
 def test_send_keys_error(mocker):
     """send_keys 실패 테스트"""
+    import subprocess
     mocker.patch(
         "subprocess.run",
-        side_effect=Exception("tmux not found")
+        side_effect=subprocess.CalledProcessError(1, "tmux")
     )
     
     ctl = TmuxController(pane_id="%3")
