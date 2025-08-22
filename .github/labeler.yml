@@ -1,26 +1,30 @@
 # 파일 경로 기반 자동 라벨
 "area:protocol":
-  - "core/protocol.py"
-"area:idempotency":
-  - "core/idempotency.py"
-"area:retry":
-  - "core/retry.py"
-"area:controllers":
-  - "controllers/**"
-"area:tmux":
-  - "controllers/**/tmux*"
-"tests":
-  - "tests/**"
+  - changed-files:
+    - any-glob-to-any-file: "core/protocol.py"
 
-# 키워드 기반 (제목/본문)
-"mvp":
-  - any:
-      - title: "\\bMVP\\b"
-      - body: "\\bPhase 1\\b|\\bmvp\\b"
-"epic":
-  - any:
-      - title: "^\\[Epic\\]"
-"bug":
-  - any:
-      - title: "^\\[Bug\\]"
-      - body: "\\bEOT\\s+TIMEOUT\\b|\\bNO_ACK\\b|\\bNO_RUN\\b"
+"area:idempotency":
+  - changed-files:
+    - any-glob-to-any-file: "core/idempotency.py"
+
+"area:retry":
+  - changed-files:
+    - any-glob-to-any-file: "core/retry.py"
+
+"area:controllers":
+  - changed-files:
+    - any-glob-to-any-file: "controllers/**"
+
+"area:tmux":
+  - changed-files:
+    - any-glob-to-any-file: "controllers/**/tmux*"
+
+"tests":
+  - changed-files:
+    - any-glob-to-any-file: "tests/**"
+
+"documentation":
+  - changed-files:
+    - any-glob-to-any-file: 
+      - "docs/**"
+      - "**/*.md"
