@@ -1,5 +1,7 @@
 import subprocess
 import time
+import shlex
+import base64
 from typing import Optional, Tuple
 from dataclasses import dataclass
 
@@ -27,39 +29,79 @@ class TmuxController:
         self.pane_id = pane_id
         self.poll_interval = poll_interval
     
-    def send_keys(self, text: str, enter: bool = True) -> None:
+    def send_keys(self, text: str, enter: bool = True, safe_mode: bool = True) -> None:
         """
         tmux pane에 텍스트 전송
         
         Args:
             text: 전송할 텍스트
             enter: Enter 키 추가 여부
+            safe_mode: 특수문자 안전 처리 여부
         """
         try:
-            subprocess.run(
-                ["tmux", "send-keys", "-t", self.pane_id, text],
-                check=True,
-                capture_output=True
-            )
-            if enter:
+            if safe_mode and self._needs_safe_send(text):
+                # 특수문자가 있으면 안전 모드로 전송
+                self._safe_send(text)
+            else:
+                # 일반 전송
                 subprocess.run(
-                    ["tmux", "send-keys", "-t", self.pane_id, "Enter"],
+                    ["tmux", "send-keys", "-t", self.pane_id, text],
                     check=True,
                     capture_output=True
                 )
+                if enter:
+                    subprocess.run(
+                        ["tmux", "send-keys", "-t", self.pane_id, "Enter"],
+                        check=True,
+                        capture_output=True
+                    )
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Failed to send keys to tmux pane {self.pane_id}: {e}")
     
-    def capture_output(self) -> str:
+    def _needs_safe_send(self, text: str) -> bool:
+        """특수문자 포함 여부 확인"""
+        special_chars = ['"', "'", '`', '\\', '$', '\n', '\t', ';', '&', '|', '>', '<']
+        return any(char in text for char in special_chars)
+    
+    def _safe_send(self, text: str) -> None:
+        """특수문자를 안전하게 전송 (base64 인코딩)"""
+        # base64로 인코딩
+        b64 = base64.b64encode(text.encode()).decode()
+        
+        # tmux에서 디코드하여 실행
+        # printf로 정확한 텍스트 출력
+        cmd = f"printf '%s' '{b64}' | base64 -d | bash"
+        
+        subprocess.run(
+            ["tmux", "send-keys", "-t", self.pane_id, cmd],
+            check=True,
+            capture_output=True
+        )
+        subprocess.run(
+            ["tmux", "send-keys", "-t", self.pane_id, "Enter"],
+            check=True,
+            capture_output=True
+        )
+    
+    def capture_output(self, last_lines: Optional[int] = None) -> str:
         """
         tmux pane의 현재 출력 캡처
+        
+        Args:
+            last_lines: 캡처할 마지막 N줄 (None이면 전체)
         
         Returns:
             pane의 현재 내용
         """
         try:
+            cmd = ["tmux", "capture-pane", "-t", self.pane_id, "-p"]
+            
+            # 마지막 N줄만 캡처 (성능 최적화)
+            if last_lines:
+                cmd.extend(["-S", f"-{last_lines}"])
+            
             result = subprocess.run(
-                ["tmux", "capture-pane", "-t", self.pane_id, "-p"],
+                cmd,
                 check=True,
                 capture_output=True,
                 text=True
@@ -67,6 +109,18 @@ class TmuxController:
             return result.stdout
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Failed to capture tmux pane {self.pane_id}: {e}")
+    
+    def capture_tail(self, lines: int = 200) -> str:
+        """
+        tmux pane의 마지막 N줄만 캡처 (성능 최적화)
+        
+        Args:
+            lines: 캡처할 줄 수
+            
+        Returns:
+            마지막 N줄
+        """
+        return self.capture_output(last_lines=lines)
     
     def wait_for_token(
         self, 
@@ -86,30 +140,42 @@ class TmuxController:
             (성공 여부, 상태/에러 메시지)
         """
         deadline = time.time() + timeout
+        seen_tokens = set()  # 중복 토큰 방지
         
         while time.time() < deadline:
-            output = self.capture_output()
+            # 성능 최적화: 마지막 200줄만 캡처
+            output = self.capture_tail(200)
             lines = output.splitlines()
             
             for line in lines:
+                # 이미 본 토큰은 건너뛰기
+                line_hash = hash(line)
+                if line_hash in seen_tokens:
+                    continue
+                    
                 if token_type == "ACK":
                     parsed = parse_ack(line)
                     if parsed and parsed.id == task_id:
+                        seen_tokens.add(line_hash)
                         return True, "ACK_RECEIVED"
                         
                 elif token_type == "RUN":
                     parsed = parse_run(line)
                     if parsed and parsed.id == task_id:
+                        seen_tokens.add(line_hash)
                         return True, "RUN_RECEIVED"
                         
                 elif token_type == "EOT":
                     parsed = parse_eot(line)
                     if parsed and parsed.id == task_id:
+                        seen_tokens.add(line_hash)
                         return True, parsed.status
             
             time.sleep(self.poll_interval)
         
-        return False, f"NO_{token_type}"
+        # 타임아웃 시 디버깅용 스냅샷 추가
+        snapshot = self.capture_tail(50)[-1024:]  # 마지막 1KB
+        return False, f"NO_{token_type}|snapshot={snapshot}"
     
     def execute_with_handshake(
         self,

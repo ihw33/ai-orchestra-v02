@@ -2,10 +2,18 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
+# ANSI 컬러 코드 제거 패턴
+ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
 # 토큰 정규식 패턴
 ACK_RE = re.compile(r"^\s*@@ACK id=(?P<id>\S+)\s*$")
 RUN_RE = re.compile(r"^\s*@@RUN id=(?P<id>\S+)(?:\s+ts=(?P<ts>\S+))?\s*$")
 EOT_RE = re.compile(r"^\s*@@EOT id=(?P<id>\S+)\s+status=(?P<status>OK|FAIL)(?:\s+.*)?$")
+
+
+def strip_ansi_codes(text: str) -> str:
+    """ANSI 컬러 코드 제거"""
+    return ANSI_ESCAPE.sub('', text)
 
 
 def format_ack(task_id: str) -> str:
@@ -43,18 +51,21 @@ class Eot:
 
 
 def parse_ack(line: str) -> Optional[Ack]:
-    """ACK 토큰 파싱"""
-    m = ACK_RE.match(line)
+    """ACK 토큰 파싱 (ANSI 코드 자동 제거)"""
+    clean_line = strip_ansi_codes(line)
+    m = ACK_RE.match(clean_line)
     return Ack(m["id"]) if m else None
 
 
 def parse_run(line: str) -> Optional[Run]:
-    """RUN 토큰 파싱"""
-    m = RUN_RE.match(line)
+    """RUN 토큰 파싱 (ANSI 코드 자동 제거)"""
+    clean_line = strip_ansi_codes(line)
+    m = RUN_RE.match(clean_line)
     return Run(m["id"], m["ts"]) if m else None
 
 
 def parse_eot(line: str) -> Optional[Eot]:
-    """EOT 토큰 파싱"""
-    m = EOT_RE.match(line)
+    """EOT 토큰 파싱 (ANSI 코드 자동 제거)"""
+    clean_line = strip_ansi_codes(line)
+    m = EOT_RE.match(clean_line)
     return Eot(m["id"], m["status"]) if m else None

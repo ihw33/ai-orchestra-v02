@@ -35,9 +35,10 @@ def test_exec_handshake_success(mocker):
 def test_exec_handshake_no_ack(mocker):
     """ACK 없음 테스트"""
     mocker.patch("subprocess.run")
-    mocker.patch(
-        "subprocess.run",
-        return_value=MagicMock(returncode=0, stdout="no ack here\n")
+    mocker.patch.object(
+        TmuxController,
+        'capture_tail',
+        return_value="no ack here\n"
     )
     
     ctl = TmuxController(pane_id="%3", poll_interval=0.0)
@@ -49,7 +50,7 @@ def test_exec_handshake_no_ack(mocker):
         timeout_eot=0.1
     )
     assert not result.success
-    assert result.error == "NO_ACK"
+    assert "NO_ACK" in result.error
 
 
 def test_send_keys_error(mocker):
