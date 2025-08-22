@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+# Expect script for Gemini automation
+
+set timeout 5
+
+# Gemini 실행
+spawn gemini
+
+# 프롬프트 대기
+expect "> "
+
+# 메시지 전송
+send "Output these 3 lines:\r"
+expect "> "
+
+send "@@ACK id=EXPECT-TEST\r"
+expect "> "
+
+send "@@RUN id=EXPECT-TEST\r"
+expect "> "
+
+send "@@EOT id=EXPECT-TEST status=OK\r"
+expect "> "
+
+# 상호작용 모드로 전환 (세션 유지)
+interact
