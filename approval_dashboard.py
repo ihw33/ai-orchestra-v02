@@ -93,8 +93,17 @@ class ApprovalDashboard:
         print(f"{item['type']} #{item['number']}: {item['title']}")
         print(f"{'='*70}")
         print(f"\n{item['body'][:200]}...\n")
+        
+        # GitHub 링크 표시
+        if item['type'] == 'PR':
+            url = f"https://github.com/{self.repo}/pull/{item['number']}"
+        else:
+            url = f"https://github.com/{self.repo}/issues/{item['number']}"
+        print(f"🔗 GitHub에서 보기: {url}\n")
+        
         print("액션을 선택하세요:")
-        print("[A] ✅ 승인  [H] ⏸️ 보류  [D] ❌ 거절  [C] 💬 코멘트  [B] 뒤로")
+        print("[A] ✅ 승인  [H] ⏸️ 보류  [D] ❌ 거절  [C] 💬 코멘트")
+        print("[V] 👁️ 브라우저에서 보기  [B] 뒤로")
         
         action = input("\n선택: ").strip().lower()
         
