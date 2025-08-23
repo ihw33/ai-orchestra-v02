@@ -1,0 +1,87 @@
+name: Issue to Gemini Automation
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+jobs:
+  process-with-gemini:
+    # Self-hosted runner 또는 GitHub-hosted runner
+    runs-on: ubuntu-latest
+    
+    # Issue 제목에 [CALC] 태그가 있을 때만 실행
+    if: contains(github.event.issue.title, '[CALC]') || contains(github.event.comment.body, '/calculate')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Gemini CLI
+        run: |
+          npm install -g @gemini/cli
+          # 또는 실제 Gemini 설치 명령
+      
+      - name: Extract calculation from issue
+        id: extract
+        run: |
+          # Issue 본문에서 계산식 추출
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            # 코멘트에서 추출
+            CALC=$(echo "${{ github.event.comment.body }}" | grep -oP '/calculate\s+\K.*' | head -1)
+          else
+            # Issue 본문에서 추출
+            CALC=$(echo "${{ github.event.issue.body }}" | grep -oP 'Calculate:\s*\K.*' | head -1)
+          fi
+          
+          echo "calculation=$CALC" >> $GITHUB_OUTPUT
+          echo "Extracted calculation: $CALC"
+      
+      - name: Send to Gemini
+        id: gemini
+        run: |
+          # Gemini로 계산 실행
+          RESULT=$(gemini -p "Calculate ${{ steps.extract.outputs.calculation }} and output ONLY the number result, nothing else" 2>/dev/null | grep -v "Data" | grep -v "Loaded")
+          
+          echo "result=$RESULT" >> $GITHUB_OUTPUT
+          echo "Gemini result: $RESULT"
+      
+      - name: Post result to issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const calculation = '${{ steps.extract.outputs.calculation }}';
+            const result = '${{ steps.gemini.outputs.result }}';
+            
+            const comment = `## 🤖 Gemini Calculation Result
+            
+            **Expression**: \`${calculation}\`
+            **Result**: **${result}**
+            
+            ---
+            🔧 Processed by Gemini CLI via GitHub Actions
+            ⏱️ Timestamp: ${new Date().toISOString()}`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+      
+      - name: Add labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['gemini-processed', 'automated']
+            });

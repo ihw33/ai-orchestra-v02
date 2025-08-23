@@ -1,0 +1,113 @@
+name: Issue to Gemini Calculator (Mock for Default Runner)
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  calculate-mock:
+    # 기본 GitHub 호스팅 러너에서 실행 (tmux 없이)
+    runs-on: ubuntu-latest
+    # self-hosted 러너가 없을 때만 실행
+    if: ${{ !contains(github.event.issue.labels.*.name, 'skip-auto') && !contains(github.event.issue.labels.*.name, 'use-real-gemini') }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - name: Parse Issue to EXEC
+        id: parse
+        run: |
+          # 이슈 제목과 번호 추출
+          ISSUE_NUM="${{ github.event.issue.number }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          
+          # EXEC 메시지 생성 (계산 요청인 경우)
+          if echo "$ISSUE_TITLE" | grep -E "[0-9+\-*/]"; then
+            # 제목에서 수식 추출 (예: "1+1은 무엇입니까" → "1+1")
+            EXPR=$(echo "$ISSUE_TITLE" | sed 's/[^0-9+\-*/()]//g')
+            EXEC_MSG="CALC expr=\"$EXPR\" target=mock task_id=ISSUE-$ISSUE_NUM"
+            echo "exec_msg=$EXEC_MSG" >> $GITHUB_OUTPUT
+            echo "task_id=ISSUE-$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "expression=$EXPR" >> $GITHUB_OUTPUT
+            echo "should_process=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_process=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install Dependencies
+        if: steps.parse.outputs.should_process == 'true'
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Execute via OrchestrEX (Mock Mode)
+        if: steps.parse.outputs.should_process == 'true'
+        id: execute
+        env:
+          MOCK_GEMINI: "true"
+        run: |
+          # Mock 모드로 실행 (실제 Gemini 없이 계산)
+          python scripts/exec_to_gemini.py \
+            --exec "${{ steps.parse.outputs.exec_msg }}" \
+            --output /tmp/result.txt \
+            --mock 2>&1 | tee /tmp/execution.log
+          
+          # 결과 확인
+          if [ -f /tmp/result.txt ]; then
+            echo "result=$(cat /tmp/result.txt)" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Upload debug artifacts
+        if: always() && steps.parse.outputs.should_process == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-mock-execution-logs
+          path: |
+            /tmp/execution.log
+            /tmp/result.txt
+          retention-days: 7
+      
+      - name: Comment Result
+        if: steps.parse.outputs.should_process == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.issue.number;
+            const expression = '${{ steps.parse.outputs.expression }}';
+            const exec_msg = '${{ steps.parse.outputs.exec_msg }}';
+            const task_id = '${{ steps.parse.outputs.task_id }}';
+            const success = '${{ steps.execute.outputs.success }}' === 'true';
+            const result = '${{ steps.execute.outputs.result }}';
+            
+            let comment_body;
+            if (success) {
+              comment_body = `## 🤖 계산 결과 (Mock Mode)
+              
+**문제**: ${expression}
+**답**: **${result}**
+
+---
+*EXEC: \`${exec_msg}\`*
+*Task ID: ${task_id}*
+*⚠️ Mock 모드로 실행됨 (실제 Gemini 없이 계산)*
+*실제 Gemini를 사용하려면 self-hosted 러너가 필요합니다.*`;
+            } else {
+              comment_body = `⚠️ 계산 실패
+              
+디버그 정보는 [Actions 아티팩트](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})에서 확인하세요.`;
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: comment_body
+            });

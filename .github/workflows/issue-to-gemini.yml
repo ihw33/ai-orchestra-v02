@@ -1,0 +1,124 @@
+name: Issue to Gemini Calculator
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  calculate:
+    # Self-hosted macOS 러너에서만 실행 (tmux 필요)
+    runs-on: [self-hosted, macOS]
+    # 기본 러너에서는 실행하지 않음
+    if: ${{ !contains(github.event.issue.labels.*.name, 'skip-auto') }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      
+      - name: Parse Issue to EXEC
+        id: parse
+        run: |
+          # 이슈 제목과 번호 추출
+          ISSUE_NUM="${{ github.event.issue.number }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          
+          # EXEC 메시지 생성 (계산 요청인 경우)
+          if echo "$ISSUE_TITLE" | grep -E "[0-9+\-*/]"; then
+            # 제목에서 수식 추출 (예: "1+1은 무엇입니까" → "1+1")
+            EXPR=$(echo "$ISSUE_TITLE" | sed 's/[^0-9+\-*/()]//g')
+            EXEC_MSG="CALC expr=\"$EXPR\" target=gemini task=ISSUE-$ISSUE_NUM"
+            echo "exec_msg=$EXEC_MSG" >> $GITHUB_OUTPUT
+            echo "task_id=ISSUE-$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "expression=$EXPR" >> $GITHUB_OUTPUT
+            echo "should_process=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_process=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install Dependencies
+        if: steps.parse.outputs.should_process == 'true'
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Ensure tmux session exists
+        if: steps.parse.outputs.should_process == 'true'
+        run: |
+          # tmux 세션 확인 및 생성
+          if ! tmux has-session -t gemini-cli 2>/dev/null; then
+            echo "Creating tmux session gemini-cli"
+            tmux new-session -d -s gemini-cli
+            sleep 0.5
+            tmux send-keys -t gemini-cli:0.0 'gemini' Enter
+            sleep 1
+          fi
+          echo "Tmux session ready"
+      
+      - name: Execute via OrchestrEX
+        if: steps.parse.outputs.should_process == 'true'
+        id: execute
+        env:
+          GEMINI_PANE: "gemini-cli:0.0"
+        run: |
+          # 실행 로그 저장
+          python scripts/exec_to_gemini.py \
+            --exec "${{ steps.parse.outputs.exec_msg }}" \
+            --output /tmp/result.txt 2>&1 | tee /tmp/execution.log
+          
+          # 결과 확인
+          if [ -f /tmp/result.txt ]; then
+            echo "result=$(cat /tmp/result.txt)" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Upload debug artifacts
+        if: always() && steps.parse.outputs.should_process == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-execution-logs
+          path: |
+            /tmp/execution.log
+            /tmp/result.txt
+          retention-days: 7
+      
+      - name: Comment Result
+        if: steps.parse.outputs.should_process == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.issue.number;
+            const expression = '${{ steps.parse.outputs.expression }}';
+            const exec_msg = '${{ steps.parse.outputs.exec_msg }}';
+            const task_id = '${{ steps.parse.outputs.task_id }}';
+            const success = '${{ steps.execute.outputs.success }}' === 'true';
+            const result = '${{ steps.execute.outputs.result }}';
+            
+            let comment_body;
+            if (success) {
+              comment_body = `## 🤖 Gemini 계산 결과
+              
+**문제**: ${expression}
+**답**: **${result}**
+
+---
+*EXEC: \`${exec_msg}\`*
+*Task ID: ${task_id}*
+*🎯 3-Step Handshake 성공*`;
+            } else {
+              comment_body = `⚠️ 계산 실패: Gemini와 통신할 수 없습니다.
+              
+디버그 정보는 [Actions 아티팩트](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})에서 확인하세요.`;
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: comment_body
+            });
