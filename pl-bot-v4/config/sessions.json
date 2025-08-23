@@ -1,0 +1,46 @@
+{
+  "sessions": {
+    "ORCH_CLAUDE": {
+      "tab": 4,
+      "session": 1,
+      "cli": "claude",
+      "name": "Claude Code",
+      "window_title": "Claude Code",
+      "expected_prompt": ">"
+    },
+    "ORCH_GEMINI": {
+      "tab": 4,
+      "session": 3,
+      "cli": "gemini",
+      "name": "Gemini CLI",
+      "window_title": "Gemini",
+      "expected_prompt": "gemini>"
+    },
+    "ORCH_CODEX": {
+      "tab": 4,
+      "session": 4,
+      "cli": "codex",
+      "name": "Codex CLI",
+      "window_title": "Codex",
+      "expected_prompt": "codex>"
+    }
+  },
+  "monitoring": {
+    "interval": 60,
+    "timeout": 300,
+    "progress_check": 1800,
+    "max_retries": 3,
+    "auto_recovery": true
+  },
+  "github": {
+    "repo": "ihw33/iwl-v5-rebuild",
+    "owner": "ihw33",
+    "progress_keywords": ["🚨", "BLOCKED", "ERROR", "FAILED", "HELP"],
+    "escalation_users": ["thomas", "pm-claude"]
+  },
+  "notifications": {
+    "webhook_url": "",
+    "email_alerts": false,
+    "slack_channel": ""
+  }
+}
