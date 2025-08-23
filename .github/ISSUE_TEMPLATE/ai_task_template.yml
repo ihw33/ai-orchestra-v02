@@ -1,0 +1,100 @@
+name: AI Task Assignment
+description: AI에게 단일 작업을 할당하기 위한 템플릿
+title: "[AI-TASK] "
+labels: ["ai-task"]
+assignees: []
+body:
+  - type: dropdown
+    id: ai-assignee
+    attributes:
+      label: 담당 AI
+      description: 이 작업을 수행할 AI를 선택하세요
+      options:
+        - Claude (PM/전략)
+        - Gemini (UX/콘텐츠)
+        - Codex (백엔드/로직)
+        - Cursor (프론트엔드)
+        - General (자동 할당)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: 작업 타입
+      description: 작업의 종류를 선택하세요
+      options:
+        - Feature (새 기능)
+        - Bug Fix (버그 수정)
+        - Review (코드 리뷰)
+        - Documentation (문서화)
+        - Research (조사/분석)
+        - Refactor (리팩토링)
+    validations:
+      required: true
+      
+  - type: input
+    id: estimated-time
+    attributes:
+      label: 예상 소요 시간
+      description: 작업 완료까지 예상 시간 (분 단위)
+      placeholder: "30"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: task-description
+    attributes:
+      label: 작업 설명
+      description: 한 번의 대화로 완료 가능하도록 명확하게 작성
+      placeholder: |
+        예: "user 테이블에 last_login 필드를 추가하고 로그인 시 자동 업데이트되도록 구현"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: inputs
+    attributes:
+      label: 필요한 입력
+      description: 작업에 필요한 파일, 정보, 컨텍스트
+      placeholder: |
+        - [ ] /models/user.py
+        - [ ] /api/auth.py
+        - [ ] 데이터베이스 스키마
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected-outputs
+    attributes:
+      label: 예상 출력
+      description: 작업 완료 후 생성/수정될 결과물
+      placeholder: |
+        - [ ] 수정된 user.py 모델
+        - [ ] 업데이트된 마이그레이션 파일
+        - [ ] 테스트 코드
+    validations:
+      required: true
+      
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: 완료 기준
+      description: 작업이 성공적으로 완료되었는지 판단할 기준
+      placeholder: |
+        - [ ] 모든 테스트 통과
+        - [ ] 마이그레이션 성공
+        - [ ] 로그인 시 last_login 필드 업데이트 확인
+    validations:
+      required: true
+      
+  - type: textarea
+    id: context
+    attributes:
+      label: 추가 컨텍스트
+      description: 관련 이슈, PR, 문서 링크 등
+      placeholder: |
+        관련 이슈: #123
+        참고 문서: /docs/database.md
+    validations:
+      required: false
