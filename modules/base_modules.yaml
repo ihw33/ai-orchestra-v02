@@ -1,0 +1,224 @@
+# 🔧 Base Modules - AI Orchestra 기본 모듈 10개
+
+modules:
+  # 1. 기존 기능 검색
+  - id: "feature_scan"
+    name: "기능 검색"
+    type: "discovery"
+    description: "기존 기능/도구 검색"
+    script: "scripts/feature_scan.py"
+    inputs:
+      - name: "keyword"
+        type: "string"
+        required: true
+    outputs:
+      - name: "features"
+        type: "list"
+    example: |
+      module run feature_scan --keyword "dashboard"
+      > Found: tycoon_dashboard.py, approval_dashboard.py
+
+  # 2. GitHub 이슈 생성
+  - id: "create_issue"
+    name: "이슈 생성"
+    type: "planning"
+    description: "GitHub 이슈 자동 생성"
+    command: "gh issue create"
+    inputs:
+      - name: "title"
+        type: "string"
+        required: true
+      - name: "body"
+        type: "string"
+        required: true
+      - name: "labels"
+        type: "list"
+        required: false
+    outputs:
+      - name: "issue_number"
+        type: "integer"
+      - name: "url"
+        type: "string"
+
+  # 3. AI 팀원 할당
+  - id: "assign_team"
+    name: "팀 할당"
+    type: "planning"
+    description: "작업을 AI 팀원에게 할당"
+    script: "scripts/assign_team.py"
+    inputs:
+      - name: "task"
+        type: "string"
+        required: true
+      - name: "members"
+        type: "list"
+        default: ["Emma", "Rajiv", "Anna"]
+    outputs:
+      - name: "assignments"
+        type: "dict"
+    integration: "persona_engine.py"
+
+  # 4. Thomas 승인 요청
+  - id: "request_review"
+    name: "승인 요청"
+    type: "approval"
+    description: "Thomas 리뷰 및 승인 요청"
+    command: "gh pr review --approve"
+    inputs:
+      - name: "pr_number"
+        type: "integer"
+        required: true
+      - name: "message"
+        type: "string"
+        default: "Thomas님, 검토 부탁드립니다"
+    outputs:
+      - name: "approved"
+        type: "boolean"
+      - name: "feedback"
+        type: "string"
+
+  # 5. 코드 생성
+  - id: "code_generation"
+    name: "코드 작성"
+    type: "implementation"
+    description: "코드 자동 생성"
+    script: "scripts/code_gen.py"
+    inputs:
+      - name: "spec"
+        type: "string"
+        required: true
+      - name: "language"
+        type: "string"
+        default: "python"
+    outputs:
+      - name: "file_path"
+        type: "string"
+      - name: "lines_of_code"
+        type: "integer"
+
+  # 6. 테스트 실행
+  - id: "test_execution"
+    name: "테스트"
+    type: "validation"
+    description: "자동 테스트 실행"
+    command: "pytest"
+    inputs:
+      - name: "test_path"
+        type: "string"
+        default: "tests/"
+      - name: "coverage"
+        type: "boolean"
+        default: true
+    outputs:
+      - name: "passed"
+        type: "integer"
+      - name: "failed"
+        type: "integer"
+      - name: "coverage_percent"
+        type: "float"
+
+  # 7. PR 병합
+  - id: "merge_pr"
+    name: "PR 병합"
+    type: "integration"
+    description: "Pull Request 자동 병합"
+    command: "gh pr merge"
+    inputs:
+      - name: "pr_number"
+        type: "integer"
+        required: true
+      - name: "method"
+        type: "string"
+        default: "squash"
+    outputs:
+      - name: "merged"
+        type: "boolean"
+      - name: "commit_sha"
+        type: "string"
+
+  # 8. 배포
+  - id: "deploy"
+    name: "배포"
+    type: "deployment"
+    description: "프로덕션 배포"
+    script: "scripts/deploy.py"
+    inputs:
+      - name: "environment"
+        type: "string"
+        default: "production"
+      - name: "version"
+        type: "string"
+        required: true
+    outputs:
+      - name: "deployed"
+        type: "boolean"
+      - name: "url"
+        type: "string"
+
+  # 9. 보고서 전송
+  - id: "send_report"
+    name: "보고서"
+    type: "communication"
+    description: "일일/주간 보고서 생성 및 전송"
+    script: "scripts/send_report.py"
+    inputs:
+      - name: "type"
+        type: "string"
+        enum: ["daily", "weekly", "monthly"]
+      - name: "recipients"
+        type: "list"
+        default: ["Thomas"]
+    outputs:
+      - name: "sent"
+        type: "boolean"
+      - name: "report_path"
+        type: "string"
+    integration: "persona_comments.py"
+
+  # 10. 롤백
+  - id: "rollback"
+    name: "롤백"
+    type: "recovery"
+    description: "이전 버전으로 롤백"
+    command: "git revert"
+    inputs:
+      - name: "commit_sha"
+        type: "string"
+        required: true
+      - name: "reason"
+        type: "string"
+        required: true
+    outputs:
+      - name: "rolled_back"
+        type: "boolean"
+      - name: "new_commit"
+        type: "string"
+
+# 모듈 조합 예시
+workflows:
+  new_feature:
+    description: "새 기능 개발 워크플로우"
+    steps:
+      - module: "feature_scan"
+      - module: "create_issue"
+      - module: "assign_team"
+      - module: "code_generation"
+      - module: "test_execution"
+      - module: "request_review"
+      - module: "merge_pr"
+      - module: "deploy"
+      - module: "send_report"
+
+  hotfix:
+    description: "긴급 수정"
+    steps:
+      - module: "code_generation"
+      - module: "test_execution"
+      - module: "deploy"
+      - module: "send_report"
+
+  rollback_emergency:
+    description: "긴급 롤백"
+    steps:
+      - module: "rollback"
+      - module: "send_report"
