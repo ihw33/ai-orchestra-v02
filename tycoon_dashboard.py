@@ -12,6 +12,7 @@ import curses
 from datetime import datetime
 import subprocess
 import json
+import shlex
 
 class TycoonDashboard:
     """터미널 기반 타이쿤 대시보드"""
@@ -57,22 +58,23 @@ class TycoonDashboard:
         """실제 GitHub 데이터 가져오기"""
         try:
             # PR 목록
-            cmd = "gh pr list -R ihw33/ai-orchestra-v02 --json number,title,state --limit 5 2>/dev/null"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            cmd = ["gh", "pr", "list", "-R", "ihw33/ai-orchestra-v02", "--json", "number,title,state", "--limit", "5"]
+            result = subprocess.run(cmd, capture_output=True, text=True, stderr=subprocess.DEVNULL)
             if result.returncode == 0 and result.stdout:
                 prs = json.loads(result.stdout)
                 self.pr_total = len(prs)
                 self.pr_merged = len([p for p in prs if p.get('state') == 'MERGED'])
             
             # Issue 목록
-            cmd = "gh issue list -R ihw33/ai-orchestra-v02 --json number,title,state --limit 10 2>/dev/null"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            cmd = ["gh", "issue", "list", "-R", "ihw33/ai-orchestra-v02", "--json", "number,title,state", "--limit", "10"]
+            result = subprocess.run(cmd, capture_output=True, text=True, stderr=subprocess.DEVNULL)
             if result.returncode == 0 and result.stdout:
                 issues = json.loads(result.stdout)
                 self.issues_total = len(issues)
                 self.issues_closed = len([i for i in issues if i.get('state') == 'CLOSED'])
-        except:
-            pass  # 실패해도 기본값 사용
+        except (subprocess.SubprocessError, json.JSONDecodeError) as e:
+            # 실패 시 기본값 사용, 에러는 로깅만
+            pass
     
     def draw_dashboard(self, stdscr):
         """대시보드 그리기"""
@@ -195,7 +197,9 @@ class TycoonDashboard:
     
     def approve_all(self):
         """모든 결정 승인"""
-        for decision in self.decisions:
+        # 리스트 복사본으로 작업하여 순회 중 수정 문제 방지
+        decisions_to_approve = self.decisions.copy()
+        for decision in decisions_to_approve:
             self.handle_decision(decision['id'])
         self.score += 100
         self.team_morale = min(100, self.team_morale + 5)

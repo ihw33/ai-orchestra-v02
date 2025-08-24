@@ -1,0 +1,50 @@
+{
+  "time_based": [
+    {
+      "name": "morning_routine",
+      "schedule": "09:00",
+      "workflow": "morning_routine",
+      "enabled": true
+    },
+    {
+      "name": "daily_report",
+      "schedule": "23:30",
+      "workflow": "send_report",
+      "enabled": true
+    },
+    {
+      "name": "friday_deploy",
+      "schedule": "friday 17:00",
+      "workflow": "deploy",
+      "enabled": false
+    }
+  ],
+  "event_based": [
+    {
+      "name": "bug_hotfix",
+      "event": "issue_labeled:bug",
+      "workflow": "hotfix",
+      "enabled": true
+    },
+    {
+      "name": "pr_merged",
+      "event": "pr_merged:main",
+      "workflow": "deploy",
+      "enabled": true
+    }
+  ],
+  "condition_based": [
+    {
+      "name": "low_coverage",
+      "condition": "test_coverage < 80",
+      "workflow": "add_tests",
+      "enabled": true
+    },
+    {
+      "name": "high_error_rate",
+      "condition": "error_rate > 5",
+      "workflow": "emergency_rollback",
+      "enabled": true
+    }
+  ]
+}

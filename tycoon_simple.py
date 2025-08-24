@@ -44,8 +44,8 @@ class SimpleTycoon:
     def get_github_data(self):
         """GitHub 데이터 가져오기"""
         try:
-            cmd = "gh pr list -R ihw33/ai-orchestra-v02 --state open --json number,title --limit 3 2>/dev/null"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            cmd = ["gh", "pr", "list", "-R", "ihw33/ai-orchestra-v02", "--state", "open", "--json", "number,title", "--limit", "3"]
+            result = subprocess.run(cmd, capture_output=True, text=True, stderr=subprocess.DEVNULL)
             if result.returncode == 0 and result.stdout:
                 prs = json.loads(result.stdout)
                 for pr in prs[:3]:
@@ -54,7 +54,7 @@ class SimpleTycoon:
                         "number": pr['number'],
                         "title": pr['title'][:30]
                     })
-        except:
+        except (subprocess.SubprocessError, json.JSONDecodeError) as e:
             # 실패시 샘플 데이터
             self.decisions = [
                 {"type": "PR", "number": 49, "title": "Dashboard Feature"},
@@ -185,7 +185,8 @@ class SimpleTycoon:
                 print(f"\n👋 Final Score: {self.score:,} | Days: {self.day}")
                 break
             elif choice == 'A':
-                for i in range(len(self.decisions)):
+                # 모든 결정을 역순으로 처리 (인덱스 변경 문제 방지)
+                while self.decisions:
                     self.handle_decision(1)
                 self.events.append("🎉 All decisions approved!")
             elif choice == 'T':
