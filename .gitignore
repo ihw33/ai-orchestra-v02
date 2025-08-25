@@ -45,3 +45,8 @@ logs/
 .env.local
 session_cache/
 idempotency_cache/
+
+# Claude Code auto-commit
+.commit_message.txt.backup
+*.tmp
+.claude/.cache/

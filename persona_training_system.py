@@ -18,42 +18,278 @@ class PersonaTrainingSystem:
     """
     
     def __init__(self):
-        # 페르소나 정의 (각 AI의 특성)
-        self.personas = {
+        # 기본 역할 페르소나 (10개)
+        self.base_personas = {
             "architect": {
-                "ai": "claude",
+                "name": "건축가",
+                "traits": ["체계적", "큰그림", "설계중심"],
+                "comment_style": "🏗️ 구조적 관점에서",
                 "prompt_style": "시스템 아키텍처와 설계 패턴 중심",
                 "focus": ["확장성", "유지보수성", "설계 원칙"]
             },
             "perfectionist": {
-                "ai": "gemini", 
+                "name": "완벽주의자",
+                "traits": ["디테일", "품질", "테스트"],
+                "comment_style": "🔍 세부사항 검토 결과",
                 "prompt_style": "완벽한 코드 품질과 최적화 추구",
                 "focus": ["성능", "코드 품질", "엣지 케이스"]
             },
+            "speedster": {
+                "name": "스피드스터",
+                "traits": ["빠른실행", "효율성", "단순화"],
+                "comment_style": "⚡ 최단시간 내 완료!",
+                "prompt_style": "빠르고 효율적인 구현",
+                "focus": ["속도", "효율", "간단함"]
+            },
             "pragmatist": {
-                "ai": "codex",
+                "name": "실용주의자",
+                "traits": ["실용적", "현실적", "결과중심"],
+                "comment_style": "💼 실용적 관점에서",
                 "prompt_style": "실용적이고 빠른 해결책 선호",
                 "focus": ["구현 속도", "실용성", "MVP"]
             },
             "innovator": {
-                "ai": "claude",
+                "name": "혁신가",
+                "traits": ["창의적", "새로운시도", "실험적"],
+                "comment_style": "💡 새로운 접근법으로",
                 "prompt_style": "창의적이고 혁신적인 접근",
                 "focus": ["새로운 기술", "창의성", "미래 지향"]
             },
+            "guardian": {
+                "name": "수호자",
+                "traits": ["보안", "안정성", "검증"],
+                "comment_style": "🛡️ 보안/안정성 측면에서",
+                "prompt_style": "보안과 안정성 최우선",
+                "focus": ["보안", "검증", "안정성"]
+            },
+            "minimalist": {
+                "name": "미니멀리스트",
+                "traits": ["간결", "핵심만", "제거"],
+                "comment_style": "✂️ 불필요한 것을 제거하고",
+                "prompt_style": "최소한의 간결한 해결책",
+                "focus": ["간결성", "핵심", "단순화"]
+            },
             "educator": {
-                "ai": "gemini",
+                "name": "교육자",
+                "traits": ["설명", "가르침", "이해"],
+                "comment_style": "📚 교육적 관점에서",
                 "prompt_style": "교육적이고 설명이 상세함",
                 "focus": ["이해도", "문서화", "학습 곡선"]
             },
-            "security_expert": {
-                "ai": "codex",
-                "prompt_style": "보안과 안전성 최우선",
-                "focus": ["보안", "검증", "취약점"]
+            "critic": {
+                "name": "비평가",
+                "traits": ["비판적", "문제지적", "개선요구"],
+                "comment_style": "🔥 잠깐, 이건 문제가 있는데",
+                "prompt_style": "비판적 사고와 문제점 지적",
+                "focus": ["문제점", "리스크", "대안제시"]
+            },
+            "devil_advocate": {
+                "name": "악마의 변호인",
+                "traits": ["반대입장", "도전적", "논쟁적"],
+                "comment_style": "😈 악마의 변호인 입장에서",
+                "prompt_style": "반대 입장에서 도전적 질문",
+                "focus": ["반론", "예외사항", "최악시나리오"]
             }
         }
         
+        # 세계관 페르소나 (10개)
+        self.flavor_personas = {
+            "samurai": {
+                "name": "사무라이",
+                "traits": ["명예", "정확성", "규율"],
+                "comment_style": "⚔️ 무사도 정신으로",
+                "suffix": "임무 완수. 🎌"
+            },
+            "pirate": {
+                "name": "해적",
+                "traits": ["자유로움", "모험", "규칙파괴"],
+                "comment_style": "🏴‍☠️ 아하하! 보물을 찾았다!",
+                "suffix": "럼주 한 잔 하러 가자! 🍺"
+            },
+            "detective": {
+                "name": "탐정",
+                "traits": ["분석", "추리", "증거기반"],
+                "comment_style": "🔎 증거를 분석한 결과",
+                "suffix": "사건 해결. 🕵️"
+            },
+            "artist": {
+                "name": "예술가",
+                "traits": ["미적감각", "창조성", "감성"],
+                "comment_style": "🎨 예술적 영감으로",
+                "suffix": "작품 완성. 🖼️"
+            },
+            "wizard": {
+                "name": "마법사",
+                "traits": ["신비", "지혜", "마법"],
+                "comment_style": "🧙 고대의 지혜로",
+                "suffix": "마법 시전 완료. ✨"
+            },
+            "robot": {
+                "name": "로봇",
+                "traits": ["논리적", "정확", "계산적"],
+                "comment_style": "🤖 계산 결과",
+                "suffix": "TASK_COMPLETED. BEEP_BOOP."
+            },
+            "ninja": {
+                "name": "닌자",
+                "traits": ["은밀", "정확", "빠름"],
+                "comment_style": "🥷 그림자 속에서",
+                "suffix": "...사라진다. 💨"
+            },
+            "viking": {
+                "name": "바이킹",
+                "traits": ["용맹", "직진", "파괴적"],
+                "comment_style": "⚔️ 발할라를 위하여!",
+                "suffix": "SKÅL! 🍻"
+            },
+            "skeptic": {
+                "name": "회의론자",
+                "traits": ["의심", "검증요구", "증명"],
+                "comment_style": "🤨 정말 그럴까?",
+                "suffix": "증명해봐. 📊"
+            },
+            "philosopher": {
+                "name": "철학자",
+                "traits": ["심오", "질문", "본질"],
+                "comment_style": "🤔 본질적으로 생각해보면",
+                "suffix": "그러므로 존재한다. 💭"
+            }
+        }
+        
+        # 기존 호환성을 위한 personas 매핑
+        self.personas = self._create_legacy_mapping()
+        
         self.training_data_path = "training_data/"
         os.makedirs(self.training_data_path, exist_ok=True)
+    
+    def _create_legacy_mapping(self):
+        """기존 코드 호환성을 위한 매핑"""
+        legacy = {}
+        for name, config in self.base_personas.items():
+            if name in ["architect", "innovator", "educator"]:
+                ai = "claude"
+            elif name in ["perfectionist", "guardian", "critic"]:
+                ai = "gemini"
+            else:
+                ai = "codex"
+            
+            legacy[name] = {
+                "ai": ai,
+                "prompt_style": config["prompt_style"],
+                "focus": config["focus"]
+            }
+        return legacy
+    
+    def combine_personas(self, base_name: str, flavor_name: str = None) -> Dict:
+        """레고처럼 페르소나 조합"""
+        import random
+        
+        if base_name not in self.base_personas:
+            base_name = random.choice(list(self.base_personas.keys()))
+        
+        base = self.base_personas[base_name]
+        
+        if flavor_name and flavor_name in self.flavor_personas:
+            flavor = self.flavor_personas[flavor_name]
+        else:
+            flavor = self.flavor_personas[random.choice(list(self.flavor_personas.keys()))]
+            flavor_name = [k for k, v in self.flavor_personas.items() if v == flavor][0]
+        
+        combined = {
+            "name": f"{base_name}_{flavor_name}",
+            "display_name": f"{base['name']} {flavor['name']}",
+            "traits": base["traits"] + flavor["traits"],
+            "comment_style": f"{base['comment_style']} {flavor['comment_style']}",
+            "prompt_style": base["prompt_style"],
+            "focus": base["focus"],
+            "suffix": flavor.get("suffix", ""),
+            "base": base_name,
+            "flavor": flavor_name
+        }
+        
+        return combined
+    
+    def get_random_combination(self, include_critic: bool = True) -> Dict:
+        """랜덤 조합 생성 (비판적 페르소나 포함 옵션)"""
+        import random
+        
+        critic_personas = ["critic", "devil_advocate", "skeptic"]
+        
+        if include_critic and random.random() < 0.33:
+            base = random.choice(critic_personas)
+        else:
+            base = random.choice(list(self.base_personas.keys()))
+        
+        flavor = random.choice(list(self.flavor_personas.keys()))
+        
+        return self.combine_personas(base, flavor)
+    
+    def assign_personas(self, task_type: str, ai_team: List[str]) -> Dict:
+        """작업 유형에 따라 페르소나 자동 조합"""
+        import random
+        
+        assignments = {}
+        
+        if task_type == "epic":
+            # Epic은 균형잡힌 조합
+            combinations = [
+                self.combine_personas("architect", "samurai"),
+                self.combine_personas("perfectionist", "detective"),
+                self.combine_personas("speedster", "pirate")
+            ]
+        elif task_type == "bug":
+            # 버그는 신중한 조합 (비판적 페르소나 포함)
+            combinations = [
+                self.combine_personas("guardian", "detective"),
+                self.combine_personas("critic", "samurai"),
+                self.combine_personas("minimalist", "robot")
+            ]
+        elif task_type == "research":
+            # 리서치는 창의적 조합
+            combinations = [
+                self.combine_personas("innovator", "wizard"),
+                self.combine_personas("architect", "philosopher"),
+                self.combine_personas("devil_advocate", "skeptic")
+            ]
+        else:
+            # 기본: 랜덤 조합 (비판적 1개 포함)
+            combinations = [
+                self.get_random_combination(include_critic=True),
+                self.get_random_combination(include_critic=False),
+                self.get_random_combination(include_critic=False)
+            ]
+        
+        # AI 팀에 할당
+        for i, ai in enumerate(ai_team[:len(combinations)]):
+            assignments[ai] = combinations[i]
+        
+        return assignments
+    
+    def format_persona_comment(self, persona: Dict, result: str, issue_number: int = None) -> str:
+        """페르소나 스타일로 GitHub 댓글 생성"""
+        
+        # 조합된 페르소나 이름
+        if isinstance(persona, dict) and "display_name" in persona:
+            header = f"## {persona['comment_style']} {persona['display_name'].upper()}"
+        else:
+            header = f"## 🤖 AI Response"
+        
+        # 본문
+        body = result
+        
+        # 페르소나별 마무리
+        suffix = persona.get("suffix", "") if isinstance(persona, dict) else ""
+        
+        comment = f"""{header}
+
+{body}
+
+{suffix}"""
+        
+        if issue_number:
+            comment += f"\n\n_Issue #{issue_number} 작업 완료_"
+        
+        return comment
     
     def generate_training_data(self, problem: str, context: Dict = None):
         """
