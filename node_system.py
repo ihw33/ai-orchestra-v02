@@ -290,7 +290,7 @@ class NodeFactory:
             nodes.append(NodeFactory.create_node(NodeType.ANALYZE_CODE))
             nodes.append(NodeFactory.create_node(NodeType.CREATE_REPORT))
         
-        if "workflow" in instruction.lower() or "actions" in instruction.lower():
+        if any(keyword in instruction.lower() for keyword in ["workflow", "actions", "ci/cd", ".github"]):
             nodes.append(NodeFactory.create_node(
                 NodeType.ACTIONS_LOCAL_TEST,
                 executor='act',
