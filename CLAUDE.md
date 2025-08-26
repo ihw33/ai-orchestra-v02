@@ -132,6 +132,17 @@ gh issue comment 68 -R ihw33/ai-orchestra-v02 --body "$(gemini -p '작업')"
 grep -i "도입\|분석\|버그" NODE_DAG_PATTERNS.md
 ```
 
+## 🤖 서브에이전트 자동 활용
+
+AI 작업 시 키워드에 따라 자동으로 적절한 서브에이전트 선택:
+- **Backend/API** → `backend-architect`
+- **UI/UX** → `ui-ux-designer`  
+- **분석/KPI** → `business-analyst`
+- **AI/LLM** → `ai-engineer`
+
+상세: `personas/subagent_selector.py` 참조
+
 ## 💡 기억하기
 **"나는 지휘자다. 연주는 악단이 한다."**
 **"시스템은 스스로 성장한다. 모든 경험이 새 노드가 된다."**
+**"적절한 전문가(서브에이전트)에게 적절한 작업을 할당한다."**
