@@ -56,6 +56,12 @@ class NodeType(Enum):
     
     # 페르소나 (메타 노드)
     APPLY_PERSONA = "apply_persona"
+    
+    # MCP 서버 노드들
+    MCP_MEMORY_STORE = "mcp_memory_store"         # 메모리 저장
+    MCP_MEMORY_SEARCH = "mcp_memory_search"       # 메모리 검색
+    MCP_CONTEXT7_RESOLVE = "mcp_context7_resolve" # 라이브러리 ID 해석
+    MCP_CONTEXT7_DOCS = "mcp_context7_docs"       # 문서 조회
 
 class NodeStatus(Enum):
     """노드 실행 상태"""
