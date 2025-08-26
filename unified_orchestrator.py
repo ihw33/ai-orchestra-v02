@@ -28,6 +28,14 @@ from error_handler import (
     log_error
 )
 
+# 페르소나 시스템 임포트
+try:
+    from personas.auto_persona_injector import IssueWorkflowIntegration
+    PERSONA_ENABLED = True
+except ImportError:
+    PERSONA_ENABLED = False
+    log_warning("페르소나 시스템을 찾을 수 없습니다. 기본 모드로 실행합니다.")
+
 class UnifiedOrchestrator:
     """통합 오케스트레이터 - 모든 기능을 하나로"""
     
@@ -35,6 +43,11 @@ class UnifiedOrchestrator:
         # 기본 설정
         self.repo = os.getenv('GITHUB_REPO', 'ihw33/ai-orchestra-v02')
         self.timeout = int(os.getenv('AI_TIMEOUT', '120'))
+        
+        # 페르소나 시스템 초기화
+        if PERSONA_ENABLED:
+            self.persona_integration = IssueWorkflowIntegration()
+            log_info("✨ 페르소나 시스템 활성화됨")
         
         # AI 설정 (multi_ai_orchestrator에서)
         self.ais = {
@@ -101,18 +114,41 @@ class UnifiedOrchestrator:
         if not issue_content:
             return {'success': False, 'error': 'Issue not found'}
         
-        # 패턴 감지
-        pattern = self.detect_pattern(issue_content['title'] + ' ' + issue_content.get('body', ''))
-        workflow = self.workflows.get(pattern, ['gemini', 'claude', 'codex'])
+        # 페르소나 모드 확인 ([AI] 태그가 있고 페르소나 시스템이 활성화된 경우)
+        use_personas = False
+        if PERSONA_ENABLED and '[AI]' in issue_content.get('title', ''):
+            use_personas = True
+            log_info("🎭 페르소나 모드로 실행합니다")
         
-        print(f"📋 Pattern: {pattern}")
-        print(f"🤖 Workflow: {' → '.join(workflow)}")
+        if use_personas:
+            # 페르소나 시스템으로 처리
+            try:
+                self.persona_integration.on_issue_created(issue_number)
+                return {
+                    'success': True,
+                    'issue': issue_number,
+                    'mode': 'persona',
+                    'message': '페르소나 기반 AI 팀이 작업을 수행했습니다'
+                }
+            except Exception as e:
+                log_error(f"페르소나 모드 실패: {e}")
+                log_info("기본 모드로 폴백합니다")
+                use_personas = False
         
-        # AI 실행
-        if parallel:
-            results = self._execute_parallel(workflow, issue_content)
-        else:
-            results = self._execute_sequential(workflow, issue_content)
+        # 기본 모드 (페르소나 미사용 또는 실패 시)
+        if not use_personas:
+            # 패턴 감지
+            pattern = self.detect_pattern(issue_content['title'] + ' ' + issue_content.get('body', ''))
+            workflow = self.workflows.get(pattern, ['gemini', 'claude', 'codex'])
+            
+            print(f"📋 Pattern: {pattern}")
+            print(f"🤖 Workflow: {' → '.join(workflow)}")
+            
+            # AI 실행
+            if parallel:
+                results = self._execute_parallel(workflow, issue_content)
+            else:
+                results = self._execute_sequential(workflow, issue_content)
         
         # 결과 GitHub에 포스팅
         self._post_results_to_issue(issue_number, results)
