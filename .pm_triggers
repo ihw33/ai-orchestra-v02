@@ -1,0 +1,17 @@
+# PM 자동 트리거 설정
+# 이 파일이 있으면 PM 모드 자동 활성화
+
+PROJECT_TYPE=ai-orchestra
+PM_ROLE=true
+AUTO_WORKFLOWS=multi_ai_orchestrator.py,relay_pipeline_system.py
+GITHUB_REPO=ihw33/ai-orchestra-v02
+AI_COMMANDS=gemini -p,claude -p,codex -p
+
+# 자동 실행할 체크
+AUTO_CHECK_ISSUES=true
+AUTO_CHECK_BACKGROUND=true
+ISSUE_LIMIT=3
+
+# 단기 기억 최소화
+NO_DOCUMENT_LOAD=true
+COMMAND_ONLY=true

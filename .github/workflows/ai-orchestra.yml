@@ -1,0 +1,232 @@
+# DEPRECATED: AI Orchestra는 이제 로컬에서 직접 실행합니다
+# PM Claude가 이슈 생성과 동시에 multi_ai_orchestrator.py를 실행
+# GitHub Actions는 더 이상 필요하지 않음
+
+# name: AI Orchestra - Multi AI Collaboration
+# 
+# on:
+#   issues:
+#     types: [opened, edited, labeled]
+#   issue_comment:
+#     types: [created]
+# 
+# jobs:
+  ai-orchestra:
+    runs-on: ubuntu-latest
+    
+    # [AI] 태그나 ai-task 라벨이 있을 때만 실행
+    if: |
+      (contains(github.event.issue.title, '[AI]') || 
+       contains(github.event.issue.labels.*.name, 'ai-task')) &&
+      github.event.issue.state == 'open'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests PyGithub
+          # AI CLI 도구들 설치 (실제 환경에 맞게 수정 필요)
+          # npm install -g gemini-cli claude-cli codex-cli
+      
+      - name: Analyze issue for persona
+        id: analyze
+        run: |
+          python3 << 'EOF'
+          import json
+          import os
+          
+          # 이슈 정보 가져오기
+          issue_title = os.environ.get('ISSUE_TITLE', '')
+          issue_body = os.environ.get('ISSUE_BODY', '')
+          full_content = f"{issue_title}\n{issue_body}"
+          
+          # 페르소나 결정 로직
+          persona = 'balanced'
+          urgency = 'normal'
+          
+          if any(word in full_content.lower() for word in ['긴급', '빨리', 'urgent', 'asap']):
+              persona = 'speedster'
+              urgency = 'high'
+          elif any(word in full_content.lower() for word in ['완벽', '꼼꼼', 'perfect', 'thorough']):
+              persona = 'perfectionist'
+              urgency = 'perfect'
+          elif any(word in full_content.lower() for word in ['버그', '문제', 'bug', 'issue', 'error']):
+              persona = 'critic'
+          elif any(word in full_content.lower() for word in ['간단', '최소', 'simple', 'minimal']):
+              persona = 'minimalist'
+          
+          # 워크플로우 결정
+          workflow = 'parallel'
+          if any(word in full_content.lower() for word in ['버그', 'bug', '수정', 'fix']):
+              workflow = 'relay'
+          
+          print(f"::set-output name=persona::{persona}")
+          print(f"::set-output name=urgency::{urgency}")
+          print(f"::set-output name=workflow::{workflow}")
+          
+          # 분석 결과 로그
+          print(f"Persona: {persona}, Urgency: {urgency}, Workflow: {workflow}")
+          EOF
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+      
+      - name: Create AI prompts
+        id: prompts
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          
+          persona = "${{ steps.analyze.outputs.persona }}"
+          urgency = "${{ steps.analyze.outputs.urgency }}"
+          issue_title = os.environ.get('ISSUE_TITLE', '')
+          issue_body = os.environ.get('ISSUE_BODY', '')
+          
+          # 페르소나별 스타일
+          persona_styles = {
+              'speedster': '⚡ 빠르고 간결하게. 핵심만 구현. MVP 우선.',
+              'perfectionist': '⭐ 완벽하고 꼼꼼하게. 모든 엣지케이스 처리.',
+              'critic': '🔍 비판적으로 분석. 문제점 우선 파악.',
+              'minimalist': '✨ 최소한의 코드로. 단순하고 명확하게.',
+              'balanced': '⚖️ 균형잡힌 접근. 실용적인 해결책.'
+          }
+          
+          style = persona_styles.get(persona, persona_styles['balanced'])
+          
+          # 기본 프롬프트 템플릿
+          base_prompt = f"""
+페르소나: {persona}
+작업 스타일: {style}
+긴급도: {urgency}
+
+이슈 제목: {issue_title}
+이슈 내용: {issue_body}
+
+당신의 역할에 맞게 이 이슈를 해결하세요.
+{persona} 스타일로 접근하세요.
+"""
+          
+          # 각 AI별 프롬프트
+          gemini_prompt = base_prompt + "\n역할: 아키텍처 설계 & 전체 구조에 집중"
+          claude_prompt = base_prompt + "\n역할: 실제 구현과 코드 품질에 집중"
+          codex_prompt = base_prompt + "\n역할: 백엔드 로직과 API 설계에 집중"
+          
+          # 출력 (GitHub Actions에서 사용)
+          print(f"::set-output name=gemini_prompt::{json.dumps(gemini_prompt)}")
+          print(f"::set-output name=claude_prompt::{json.dumps(claude_prompt)}")
+          print(f"::set-output name=codex_prompt::{json.dumps(codex_prompt)}")
+          EOF
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+      
+      - name: Call AI APIs (병렬 처리)
+        id: ai_results
+        run: |
+          # 실제 AI API 호출 (예시)
+          # 실제 구현 시 각 AI의 API 키와 엔드포인트 필요
+          
+          echo "🤖 Calling Gemini..."
+          # GEMINI_RESULT=$(curl -X POST ... gemini api ...)
+          GEMINI_RESULT="[Gemini 응답 예시: 아키텍처 설계 완료]"
+          
+          echo "🤖 Calling Claude..."
+          # CLAUDE_RESULT=$(curl -X POST ... claude api ...)
+          CLAUDE_RESULT="[Claude 응답 예시: 구현 코드 작성 완료]"
+          
+          echo "🤖 Calling Codex..."
+          # CODEX_RESULT=$(curl -X POST ... codex api ...)
+          CODEX_RESULT="[Codex 응답 예시: API 설계 완료]"
+          
+          # 결과 저장
+          echo "::set-output name=gemini::$GEMINI_RESULT"
+          echo "::set-output name=claude::$CLAUDE_RESULT"
+          echo "::set-output name=codex::$CODEX_RESULT"
+      
+      - name: Post results to issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const persona = '${{ steps.analyze.outputs.persona }}';
+            const urgency = '${{ steps.analyze.outputs.urgency }}';
+            const workflow = '${{ steps.analyze.outputs.workflow }}';
+            
+            // AI 결과 (실제로는 steps.ai_results.outputs에서 가져옴)
+            const geminiResult = '${{ steps.ai_results.outputs.gemini }}';
+            const claudeResult = '${{ steps.ai_results.outputs.claude }}';
+            const codexResult = '${{ steps.ai_results.outputs.codex }}';
+            
+            const comment = `## 🤖 AI Orchestra Results
+            
+            ### 📊 분석 결과
+            - **페르소나**: ${persona}
+            - **긴급도**: ${urgency}
+            - **워크플로우**: ${workflow}
+            
+            ### 🎯 AI 응답
+            
+            #### Gemini (아키텍처)
+            \`\`\`
+            ${geminiResult}
+            \`\`\`
+            
+            #### Claude (구현)
+            \`\`\`
+            ${claudeResult}
+            \`\`\`
+            
+            #### Codex (백엔드)
+            \`\`\`
+            ${codexResult}
+            \`\`\`
+            
+            ---
+            ⚡ Processed by AI Orchestra via GitHub Actions
+            🎭 Persona: ${persona}
+            ⏱️ ${new Date().toISOString()}`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+            
+            // 처리 완료 라벨 추가
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['ai-processed', `persona-${persona}`]
+            });
+      
+      - name: Close issue if completed
+        if: steps.analyze.outputs.urgency == 'high'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // 긴급 작업은 자동 완료 처리 (선택적)
+            const comment = `✅ 긴급 작업 자동 완료 처리됨`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+            
+            // 이슈 닫기 (선택적)
+            // await github.rest.issues.update({
+            //   owner: context.repo.owner,
+            //   repo: context.repo.repo,
+            //   issue_number: context.issue.number,
+            //   state: 'closed'
+            // });

@@ -1,0 +1,81 @@
+name: AI Response Monitor
+
+on:
+  issue_comment:
+    types: [created]
+  
+jobs:
+  check-ai-response:
+    if: contains(github.event.comment.body, '✅')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check AI Responses
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.issue.number;
+            const comment = context.payload.comment.body;
+            const repo = context.repo;
+            
+            // AI 완료 패턴 확인
+            const aiPatterns = {
+              'ai-claude-done': /✅ Claude/,
+              'ai-gemini-done': /✅ Gemini/,
+              'ai-codex-done': /✅ Codex/
+            };
+            
+            // 해당하는 라벨 추가
+            for (const [label, pattern] of Object.entries(aiPatterns)) {
+              if (pattern.test(comment)) {
+                await github.rest.issues.addLabels({
+                  owner: repo.owner,
+                  repo: repo.repo,
+                  issue_number: issueNumber,
+                  labels: [label]
+                });
+                
+                console.log(`Added label: ${label}`);
+              }
+            }
+            
+            // 현재 라벨 확인
+            const { data: issue } = await github.rest.issues.get({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: issueNumber
+            });
+            
+            const labels = issue.labels.map(l => l.name);
+            
+            // 모든 AI 완료 확인
+            if (labels.includes('ai-claude-done') && 
+                labels.includes('ai-gemini-done') && 
+                labels.includes('ai-codex-done')) {
+              
+              // 모든 AI 완료 라벨 추가
+              await github.rest.issues.addLabels({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: issueNumber,
+                labels: ['ai-responded']
+              });
+              
+              // PM에게 알림 (이슈 코멘트로)
+              await github.rest.issues.createComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: issueNumber,
+                body: `## 🎉 모든 AI 작업 완료!\n\n✅ Claude: 완료\n✅ Gemini: 완료\n✅ Codex: 완료\n\n@ihw33 모든 AI가 작업을 완료했습니다.`
+              });
+            }
+
+  notify-pm:
+    if: contains(github.event.issue.labels.*.name, 'ai-responded')
+    runs-on: ubuntu-latest
+    needs: check-ai-response
+    
+    steps:
+      - name: Send notification
+        run: |
+          echo "🔔 PM Claude에게 알림: 이슈 #${{ github.event.issue.number }}의 모든 AI 작업 완료"

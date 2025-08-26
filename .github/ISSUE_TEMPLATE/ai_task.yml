@@ -1,0 +1,114 @@
+name: "AI Task"
+description: AI 협업이 필요한 작업 (PM Claude가 판단하여 생성)
+title: "[AI] <작업 제목>"
+labels: ["ai-task", "orchestra"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🤖 AI 작업 요청
+        이 템플릿은 PM Claude가 AI 협업이 필요하다고 판단한 경우 사용합니다.
+        
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: 📋 작업 유형
+      description: 어떤 종류의 작업인가요?
+      options:
+        - 🚀 기능 개발 (Feature)
+        - 🐛 버그 수정 (Bug Fix)
+        - 🔍 분석/조사 (Analysis)
+        - ♻️ 리팩토링 (Refactoring)
+        - 📝 문서화 (Documentation)
+        - 🧪 테스트 작성 (Testing)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⏰ 긴급도
+      description: 작업의 긴급도 (페르소나 자동 결정에 영향)
+      options:
+        - 🔥 긴급 (High) - speedster 페르소나
+        - ⭐ 완벽 (Perfect) - perfectionist 페르소나
+        - ⚖️ 일반 (Normal) - balanced 페르소나
+        - ✨ 간단 (Simple) - minimalist 페르소나
+    validations:
+      required: true
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 작업 설명
+      description: AI가 이해할 수 있도록 구체적으로 작성
+      placeholder: |
+        무엇을 만들거나 수정해야 하는지 설명하세요.
+        예) OAuth2.0 기반 소셜 로그인 구현
+    validations:
+      required: true
+      
+  - type: textarea
+    id: requirements
+    attributes:
+      label: ✅ 요구사항
+      description: 구체적인 요구사항 목록
+      placeholder: |
+        - Google, GitHub 로그인 지원
+        - JWT 토큰 발급
+        - 세션 관리
+        - 에러 핸들링
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: ai_assignment
+    attributes:
+      label: 🤖 AI 할당 (자동 선택됨)
+      description: 작업 유형에 따라 자동으로 AI가 할당됩니다
+      options:
+        - label: "Gemini - 아키텍처 설계 & 전체 구조"
+        - label: "Claude - 구현 & 코드 품질"
+        - label: "Codex - 백엔드 & API 설계"
+          
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: 🔄 워크플로우
+      description: 어떤 방식으로 AI들이 협업할까요?
+      options:
+        - 병렬 처리 (Parallel) - 3 AI 동시 작업
+        - 순차 처리 (Relay) - Claude→Gemini→Codex
+        - 자동 결정 (Auto) - 키워드 기반 자동 선택
+      default: 2
+      
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: 🎯 완료 조건
+      description: 작업이 완료되었다고 판단할 기준
+      placeholder: |
+        - [ ] 로그인 기능 구현 완료
+        - [ ] 테스트 코드 작성
+        - [ ] 문서화 완료
+        
+  - type: textarea
+    id: ai_instructions
+    attributes:
+      label: 🎨 AI 특별 지시사항
+      description: AI에게 전달할 특별한 지시사항 (선택)
+      placeholder: |
+        보안에 특히 신경써주세요
+        TypeScript 사용 필수
+        테스트 커버리지 80% 이상
+        
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### 📌 자동 처리 프로세스
+        1. 이 이슈가 생성되면 `pm_auto_processor.py`가 자동 감지
+        2. [AI] 태그 확인 후 워크플로우 실행
+        3. 페르소나 자동 적용 (긴급도 기반)
+        4. 각 AI에게 작업 지시 전달
+        5. 결과를 이슈 코멘트로 자동 기록

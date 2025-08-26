@@ -1,0 +1,24 @@
+{"timestamp": "2025-08-24T20:28:33.258479", "node_type": "create_issue", "executor": "claude", "success": true, "duration": 3.2, "error": ""}
+{"timestamp": "2025-08-24T20:28:33.258553", "node_type": "write_function", "executor": "codex", "success": true, "duration": 15.7, "error": ""}
+{"timestamp": "2025-08-24T20:28:33.258589", "node_type": "fix_bug_line", "executor": "codex", "success": false, "duration": 8.9, "error": "Syntax error"}
+{"timestamp": "2025-08-24T20:28:33.258619", "node_type": "run_test", "executor": "gemini", "success": true, "duration": 5.3, "error": ""}
+{"timestamp": "2025-08-24T20:28:33.363666", "process_name": "bug_fix_001", "nodes_count": 0, "total_duration": 0.10501694679260254, "success": true, "nodes_used": []}
+{"timestamp": "2025-08-24T20:39:01.879645", "node_type": "create_issue", "executor": "claude", "success": true, "duration": 2.5, "error": ""}
+{"timestamp": "2025-08-24T20:39:01.880034", "node_type": "analyze_code", "executor": "claude", "success": true, "duration": 4.2, "error": ""}
+{"timestamp": "2025-08-24T20:39:01.880144", "node_type": "write_function", "executor": "codex", "success": true, "duration": 8.3, "error": ""}
+{"timestamp": "2025-08-24T20:39:01.880286", "node_type": "run_test", "executor": "gemini", "success": true, "duration": 3.1, "error": ""}
+{"timestamp": "2025-08-24T20:39:01.880334", "node_type": "fix_bug_line", "executor": "codex", "success": false, "duration": 5.5, "error": "Syntax error"}
+{"timestamp": "2025-08-24T20:42:58.364694", "node_type": "analyze_issue", "executor": "claude", "success": true, "duration": 1.2, "error": ""}
+{"timestamp": "2025-08-24T20:42:58.374147", "node_type": "search_code", "executor": "gemini", "success": true, "duration": 0.8, "error": ""}
+{"timestamp": "2025-08-24T20:42:58.879273", "node_type": "create_plan", "executor": "claude", "success": true, "duration": 2.1, "error": ""}
+{"timestamp": "2025-08-24T20:42:59.488837", "node_type": "run_tests", "executor": "gemini", "success": true, "duration": 3.5, "error": ""}
+{"timestamp": "2025-08-24T20:42:59.489194", "node_type": "generate_report", "executor": "claude", "success": true, "duration": 1.0, "error": ""}
+{"timestamp": "2025-08-24T20:42:59.489403", "process_name": "bug_fix_workflow", "nodes_count": 5, "total_duration": 1.593832015991211, "success": true, "nodes_used": ["analyze_issue", "search_code", "create_plan", "run_tests", "generate_report"]}
+{"timestamp": "2025-08-24T20:44:00.454134", "node_type": "analyze_issue", "executor": "claude", "success": true, "duration": 1.2, "error": ""}
+{"timestamp": "2025-08-24T20:44:00.464653", "node_type": "search_code", "executor": "gemini", "success": true, "duration": 0.8, "error": ""}
+{"timestamp": "2025-08-24T20:44:00.969897", "node_type": "create_plan", "executor": "claude", "success": true, "duration": 2.1, "error": ""}
+{"timestamp": "2025-08-24T20:44:01.580053", "node_type": "run_tests", "executor": "gemini", "success": true, "duration": 3.5, "error": ""}
+{"timestamp": "2025-08-24T20:44:01.580436", "node_type": "generate_report", "executor": "claude", "success": true, "duration": 1.0, "error": ""}
+{"timestamp": "2025-08-24T20:44:01.580646", "process_name": "bug_fix_workflow", "nodes_count": 5, "total_duration": 1.4904446601867676, "success": true, "nodes_used": ["analyze_issue", "search_code", "create_plan", "run_tests", "generate_report"]}
+{"timestamp": "2025-08-24T21:37:32.494775", "node_type": "analyze_code", "executor": "claude", "success": true, "duration": 3.5, "issue_number": "60", "error": ""}
+{"timestamp": "2025-08-24T21:37:32.494852", "process_name": "test_process", "nodes_count": 3, "total_duration": 10.5, "success": true, "issue_number": "60", "nodes_used": ["analyze_code", "fix_bug_line", "run_test"]}
