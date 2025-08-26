@@ -7,7 +7,7 @@
 import json
 import subprocess
 from typing import Dict, List
-from persona_loader import PersonaLoader, TeamBuilder
+from personas.persona_loader import PersonaLoader, TeamBuilder
 from pathlib import Path
 
 class AutoPersonaInjector:
