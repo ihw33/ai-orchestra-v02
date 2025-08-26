@@ -132,6 +132,9 @@ gh issue comment 68 -R ihw33/ai-orchestra-v02 --body "$(gemini -p '작업')"
 grep -i "도입\|분석\|버그" NODE_DAG_PATTERNS.md
 ```
 
+### 🧪 Actions 로컬 테스트
+워크플로우 변경 시 → **ACTIONS_LOCAL_TEST** 노드 자동 실행
+
 ## 🤖 서브에이전트 자동 활용
 
 AI 작업 시 키워드에 따라 자동으로 적절한 서브에이전트 선택:

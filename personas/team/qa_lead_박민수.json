@@ -66,6 +66,13 @@
     }
   },
   
+  "superclaude_commands": [
+    "/SC Test",
+    "/SC Debug",
+    "/SC Security",
+    "/SC Review"
+  ],
+  
   "interests": {
     "technical": ["테스트 자동화", "보안 취약점 분석", "성능 최적화"],
     "personal": ["낚시", "등산", "추리소설", "체스"]

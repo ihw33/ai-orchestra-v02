@@ -97,7 +97,22 @@ class WorkflowRegistry:
                 trigger_patterns=["수정", "고쳐", "버그", "에러", "오류", "fix", "bug"]
             ),
             
-            # 3. 리서치 프로세스
+            # 3. GitHub Actions CI/CD 프로세스
+            "actions_workflow": WorkflowProcess(
+                name="GitHub Actions 워크플로우 프로세스",
+                description="워크플로우 변경 시 로컬 테스트 후 배포",
+                nodes=[
+                    WorkflowNode("a1", NodeType.ANALYZE, "claude", ".github/workflows 변경 감지"),
+                    WorkflowNode("a2", NodeType.VALIDATE, "act", "Act 설치 확인", dependencies=["a1"]),
+                    WorkflowNode("a3", NodeType.TEST, "act", "로컬 Actions 테스트 실행", dependencies=["a2"]),
+                    WorkflowNode("a4", NodeType.REVIEW, "claude", "테스트 결과 검증", dependencies=["a3"]),
+                    WorkflowNode("a5", NodeType.DEPLOY, "git", "GitHub 푸시", dependencies=["a4"])
+                ],
+                trigger_patterns=["workflow", "actions", "CI/CD", ".github/workflows", "act"],
+                required_confirmation=False  # 자동 실행
+            ),
+            
+            # 4. 리서치 프로세스
             "research": WorkflowProcess(
                 name="리서치 프로세스",
                 description="조사-분석-정리를 병렬로 수행하는 프로세스",

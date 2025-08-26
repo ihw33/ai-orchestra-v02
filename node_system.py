@@ -40,6 +40,7 @@ class NodeType(Enum):
     RUN_TEST = "run_test"
     CHECK_COVERAGE = "check_coverage"
     VALIDATE_OUTPUT = "validate_output"
+    ACTIONS_LOCAL_TEST = "actions_local_test"  # GitHub Actions 로컬 테스트
     
     # 리뷰/검토
     REVIEW_CODE = "review_code"
@@ -288,6 +289,13 @@ class NodeFactory:
         if "분석" in instruction:
             nodes.append(NodeFactory.create_node(NodeType.ANALYZE_CODE))
             nodes.append(NodeFactory.create_node(NodeType.CREATE_REPORT))
+        
+        if "workflow" in instruction.lower() or "actions" in instruction.lower():
+            nodes.append(NodeFactory.create_node(
+                NodeType.ACTIONS_LOCAL_TEST,
+                executor='act',
+                input_data={'workflow_path': '.github/workflows/'}
+            ))
         
         return nodes
 
