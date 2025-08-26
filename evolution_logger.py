@@ -19,17 +19,18 @@ class EvolutionLogger:
         # 노드 타입별 경험치 테이블
         self.exp_table = {
             # GitHub 작업
-            "CREATE_ISSUE": 5,
-            "ADD_COMMENT": 3,
-            "UPDATE_LABELS": 2,
-            "CREATE_PR": 10,
-            "MERGE_PR": 12,
+            "CREATE_ISSUE": 3,          # 이슈 생성만
+            "CLOSE_ISSUE": 8,           # 이슈 완료시 보너스
+            "ADD_COMMENT": 2,
+            "UPDATE_LABELS": 1,
+            "CREATE_PR": 5,             # PR 생성 (10→5로 감소)
+            "MERGE_PR": 10,             # PR 머지시 큰 보상
             
             # 코드 작성
             "WRITE_FUNCTION": 6,
             "CREATE_CLASS": 8,
-            "FIX_BUG_LINE": 8,
-            "WRITE_TEST_CASE": 6,
+            "FIX_BUG_LINE": 8,          # 버그 수정 유지
+            "WRITE_TEST_CASE": 6,       # 테스트 케이스 작성 (단위 테스트)
             
             # 파일 조작
             "CREATE_FILE": 4,
@@ -41,14 +42,15 @@ class EvolutionLogger:
             "RESEARCH_TOPIC": 7,
             "FIND_PATTERN": 4,
             
-            # 테스트
-            "RUN_TEST": 5,
+            # 테스트 실행
+            "RUN_TEST": 5,              # 테스트 실행
             "CHECK_COVERAGE": 6,
             "VALIDATE_OUTPUT": 4,
             "ACTIONS_LOCAL_TEST": 8,
             
-            # 리뷰/검토
-            "REVIEW_CODE": 7,
+            # 리뷰/검토 (성공/실패 분리 필요)
+            "REVIEW_CODE": 8,           # 코드 리뷰 성공시
+            "REVIEW_CODE_FAILED": -5,  # 코드 리뷰 실패시 감점
             "SUGGEST_IMPROVEMENT": 5,
             
             # MCP 노드
@@ -86,13 +88,22 @@ class EvolutionLogger:
     
     def on_node_complete(self, node_type: str, success: bool = True) -> Dict:
         """노드 완료시 호출"""
-        if not success:
-            # 실패한 경우 경험치 없음
-            self._append_log("FAILED", node_type, 0)
-            return {"exp_gain": 0, "level_up": False}
+        # 노드 타입을 대문자로 변환 (enum value가 소문자일 경우 대비)
+        node_type_upper = node_type.upper()
         
-        # 경험치 계산
-        exp_gain = self.exp_table.get(node_type, 3)  # 기본 3
+        # 실패한 특정 노드들은 감점 처리
+        if not success:
+            # 코드 리뷰 실패시 감점
+            if node_type_upper == "REVIEW_CODE":
+                exp_gain = self.exp_table.get("REVIEW_CODE_FAILED", -5)
+            else:
+                # 일반 실패는 경험치 없음
+                self._append_log("FAILED", node_type, 0)
+                return {"exp_gain": 0, "level_up": False}
+        else:
+            # 성공시 정상 경험치
+            # 기본값 3: 테이블에 없는 새로운 노드 타입이 추가되어도 작동
+            exp_gain = self.exp_table.get(node_type_upper, 3)
         
         # 로그에 기록
         self._append_log("COMPLETE", node_type, exp_gain)
@@ -139,13 +150,15 @@ class EvolutionLogger:
         if os.path.exists(self.log_file):
             with open(self.log_file, "r") as f:
                 for line in f:
-                    if "exp:+" in line:
+                    if "exp:" in line:
                         try:
-                            exp_part = line.split("exp:+")[1].split()[0]
+                            # exp:+10 또는 exp:-5 형태 파싱
+                            exp_part = line.split("exp:")[1].split()[0]
                             total += int(exp_part)
                         except:
                             continue
-        return total
+        # 음수가 되지 않도록 보호
+        return max(0, total)
     
     def _count_completed_nodes(self) -> int:
         """완료된 노드 수 계산"""
@@ -183,6 +196,8 @@ class EvolutionLogger:
         with open(self.log_file, "a") as f:
             if exp > 0:
                 f.write(f"{timestamp} | {event_type} | {detail} | exp:+{exp}\n")
+            elif exp < 0:
+                f.write(f"{timestamp} | {event_type} | {detail} | exp:{exp}\n")  # 음수는 그대로
             else:
                 f.write(f"{timestamp} | {event_type} | {detail}\n")
     

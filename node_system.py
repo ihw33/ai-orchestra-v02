@@ -10,6 +10,7 @@ from datetime import datetime
 import subprocess
 import json
 import time
+from evolution_logger import get_logger
 
 class NodeType(Enum):
     """노드 타입 정의 - 실제 작업 기준"""
@@ -137,11 +138,14 @@ class AtomicNode:
         """노드 실행"""
         self.start_time = time.time()
         self.state.status = NodeStatus.RUNNING
+        logger = get_logger()  # Evolution Logger 가져오기
         
         try:
             # 입력 검증
             if not self.validate_input():
                 self.state.status = NodeStatus.FAILED
+                # 실패 로깅
+                logger.on_node_complete(self.state.type.value, success=False)
                 return {"error": self.state.error_message}
             
             # AI 실행자로 작업 수행
@@ -151,11 +155,20 @@ class AtomicNode:
             self.state.status = NodeStatus.COMPLETED
             self.state.output_data = result
             
+            # 성공 로깅 및 진화 상태 업데이트
+            evo_result = logger.on_node_complete(self.state.type.value, success=True)
+            
+            # 레벨업 알림
+            if evo_result.get('level_up'):
+                print(f"\n🎉 레벨업! {evo_result['form']} Lv.{evo_result['level']} ({evo_result['stage_name']})\n")
+            
         except Exception as e:
             # 실패 처리
             self.state.status = NodeStatus.FAILED
             self.state.error_message = str(e)
             result = {"error": str(e)}
+            # 실패 로깅
+            logger.on_node_complete(self.state.type.value, success=False)
         
         finally:
             self.end_time = time.time()
