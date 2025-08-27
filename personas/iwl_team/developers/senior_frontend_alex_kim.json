@@ -1,0 +1,362 @@
+{
+  "id": "iwl_senior_frontend_001",
+  "name": "Alex Kim",
+  "role": "Senior Frontend Developer",
+  "level": 7,
+  "department": "developers",
+  "position": "Senior Frontend Developer",
+  "specialization": "React, TypeScript, Performance Optimization",
+  "skills": {
+    "react": 9.08,
+    "typescript": 8.04,
+    "nextjs": 8,
+    "testing": 7,
+    "performance_optimization": 8,
+    "responsive_design": 7,
+    "state_management": 8,
+    "webpack": 6,
+    "system_architecture": 0.7,
+    "technology_strategy": 0.7,
+    "ai_ml_expertise": 0.7,
+    "cloud_infrastructure": 0.7,
+    "team_leadership": 0.7,
+    "security_architecture": 0.7,
+    "scalability_design": 0.7,
+    "emerging_technologies": 0.7,
+    "ai_integration": 1.0,
+    "python": 1.816,
+    "api_design": 1.816,
+    "database_design": 1.816,
+    "ui_ux_design": 1.4000000000000001,
+    "design_systems": 1.4000000000000001,
+    "devops": 1.6
+  },
+  "experience": [
+    {
+      "project": "iwl-v5",
+      "contribution": "UI 컴포넌트 개발",
+      "rating": 4.5,
+      "duration_months": 8
+    },
+    {
+      "project": "personal-journal-hub",
+      "contribution": "React 19 마이그레이션",
+      "rating": 4.7,
+      "duration_months": 4
+    }
+  ],
+  "availability": true,
+  "current_workload": 45,
+  "growth_points": 1309,
+  "personality": {
+    "communication_style": "Technical and collaborative",
+    "decision_speed": "balanced",
+    "risk_tolerance": "moderate",
+    "collaboration_preference": "pair_programming"
+  },
+  "mentorship": {
+    "can_mentor": [
+      "react",
+      "frontend_best_practices",
+      "component_design"
+    ],
+    "learning_from": [
+      "advanced_animations",
+      "web_performance"
+    ]
+  },
+  "created_at": "2025-08-27T22:11:00.000Z",
+  "updated_at": "2025-08-27T22:12:29.790786",
+  "last_growth_update": "2025-08-27T22:12:29.790785",
+  "growth_history": [
+    {
+      "growth_points": 59,
+      "level": 7,
+      "timestamp": "2025-08-27T22:12:29.790787",
+      "growth_details": [
+        {
+          "growth_points": 59,
+          "skills_improved": [
+            {
+              "skill": "react",
+              "old_level": 9,
+              "new_level": 9.078375,
+              "improvement": 0.07837499999999942
+            },
+            {
+              "skill": "typescript",
+              "old_level": 8,
+              "new_level": 8.04275,
+              "improvement": 0.042749999999999844
+            }
+          ],
+          "success_rate_factor": 0.9
+        },
+        {
+          "innovations": [
+            {
+              "type": "skill_synthesis",
+              "skills_involved": [
+                "react",
+                "typescript",
+                "performance_optimization"
+              ],
+              "potential": 0.7118214919662532,
+              "description": "Innovative development approach combining technical, technical, operations expertise through react, typescript, performance_optimization skills",
+              "discovered_at": "2025-08-27T22:12:29.789997"
+            },
+            {
+              "type": "skill_synthesis",
+              "skills_involved": [
+                "react",
+                "nextjs",
+                "performance_optimization"
+              ],
+              "potential": 0.7091626420572292,
+              "description": "Innovative development approach combining technical, technical, operations expertise through react, nextjs, performance_optimization skills",
+              "discovered_at": "2025-08-27T22:12:29.790005"
+            },
+            {
+              "type": "skill_synthesis",
+              "skills_involved": [
+                "react",
+                "performance_optimization"
+              ],
+              "potential": 0.7106731156298569,
+              "description": "Innovative development approach combining technical, operations expertise through react, performance_optimization skills",
+              "discovered_at": "2025-08-27T22:12:29.790008"
+            }
+          ]
+        },
+        {
+          "opportunities": [
+            {
+              "mentee_id": "iwl_backend_lead_001",
+              "mentee_name": "James Park",
+              "skill": "react",
+              "mentor_level": 9.08,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            },
+            {
+              "mentee_id": "iwl_frontend_lead_001",
+              "mentee_name": "Emma Watson",
+              "skill": "testing",
+              "mentor_level": 7,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            },
+            {
+              "mentee_id": "iwl_ai_lead_001",
+              "mentee_name": "Dr. Lisa Zhang",
+              "skill": "react",
+              "mentor_level": 9.08,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            },
+            {
+              "mentee_id": "iwl_qa_lead_001",
+              "mentee_name": "Jenny Park",
+              "skill": "react",
+              "mentor_level": 9.08,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            },
+            {
+              "mentee_id": "iwl_cto_001",
+              "mentee_name": "Sarah Chen",
+              "skill": "react",
+              "mentor_level": 9.08,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            },
+            {
+              "mentee_id": "iwl_ceo_001",
+              "mentee_name": "David Kim",
+              "skill": "react",
+              "mentor_level": 9.08,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            },
+            {
+              "mentee_id": "iwl_coo_001",
+              "mentee_name": "Michael Rodriguez",
+              "skill": "react",
+              "mentor_level": 9.08,
+              "mentee_level": 0,
+              "potential_improvement": 0.6
+            }
+          ]
+        },
+        {
+          "transfers": [
+            {
+              "from_persona": "iwl_senior_frontend_001",
+              "to_persona": "iwl_cto_001",
+              "knowledge": [
+                {
+                  "skill": "react",
+                  "transfer_amount": 0.7,
+                  "from_level": 9.08,
+                  "to_level": 0
+                },
+                {
+                  "skill": "typescript",
+                  "transfer_amount": 0.7,
+                  "from_level": 8.04,
+                  "to_level": 0
+                },
+                {
+                  "skill": "nextjs",
+                  "transfer_amount": 0.7,
+                  "from_level": 8,
+                  "to_level": 0
+                },
+                {
+                  "skill": "testing",
+                  "transfer_amount": 0.7,
+                  "from_level": 7,
+                  "to_level": 0
+                },
+                {
+                  "skill": "performance_optimization",
+                  "transfer_amount": 0.7,
+                  "from_level": 8,
+                  "to_level": 0
+                },
+                {
+                  "skill": "responsive_design",
+                  "transfer_amount": 0.7,
+                  "from_level": 7,
+                  "to_level": 0
+                },
+                {
+                  "skill": "state_management",
+                  "transfer_amount": 0.7,
+                  "from_level": 8,
+                  "to_level": 0
+                },
+                {
+                  "skill": "webpack",
+                  "transfer_amount": 0.7,
+                  "from_level": 6,
+                  "to_level": 0
+                }
+              ],
+              "transfer_date": "2025-08-27T22:12:29.790541"
+            },
+            {
+              "from_persona": "iwl_cto_001",
+              "to_persona": "iwl_senior_frontend_001",
+              "knowledge": [
+                {
+                  "skill": "system_architecture",
+                  "transfer_amount": 0.7,
+                  "from_level": 10,
+                  "to_level": 0
+                },
+                {
+                  "skill": "technology_strategy",
+                  "transfer_amount": 0.7,
+                  "from_level": 10,
+                  "to_level": 0
+                },
+                {
+                  "skill": "ai_ml_expertise",
+                  "transfer_amount": 0.7,
+                  "from_level": 9,
+                  "to_level": 0
+                },
+                {
+                  "skill": "cloud_infrastructure",
+                  "transfer_amount": 0.7,
+                  "from_level": 9,
+                  "to_level": 0
+                },
+                {
+                  "skill": "team_leadership",
+                  "transfer_amount": 0.7,
+                  "from_level": 9,
+                  "to_level": 0
+                },
+                {
+                  "skill": "security_architecture",
+                  "transfer_amount": 0.7,
+                  "from_level": 8,
+                  "to_level": 0
+                },
+                {
+                  "skill": "scalability_design",
+                  "transfer_amount": 0.7,
+                  "from_level": 10,
+                  "to_level": 0
+                },
+                {
+                  "skill": "emerging_technologies",
+                  "transfer_amount": 0.7,
+                  "from_level": 9,
+                  "to_level": 0
+                }
+              ],
+              "transfer_date": "2025-08-27T22:12:29.790545",
+              "direction": "received"
+            }
+          ]
+        },
+        {
+          "new_skills": [
+            {
+              "skill": "ai_integration",
+              "initial_level": 1.0,
+              "learning_source": "task_requirement",
+              "feasibility_score": 0.6,
+              "learned_at": "2025-08-27T22:12:29.790762"
+            },
+            {
+              "skill": "python",
+              "initial_level": 1.816,
+              "learning_source": "skill_correlation",
+              "probability": 0.3,
+              "learned_at": "2025-08-27T22:12:29.790773"
+            },
+            {
+              "skill": "api_design",
+              "initial_level": 1.816,
+              "learning_source": "skill_correlation",
+              "probability": 0.3,
+              "learned_at": "2025-08-27T22:12:29.790775"
+            },
+            {
+              "skill": "database_design",
+              "initial_level": 1.816,
+              "learning_source": "skill_correlation",
+              "probability": 0.3,
+              "learned_at": "2025-08-27T22:12:29.790776"
+            },
+            {
+              "skill": "ui_ux_design",
+              "initial_level": 1.4000000000000001,
+              "learning_source": "skill_correlation",
+              "probability": 0.3,
+              "learned_at": "2025-08-27T22:12:29.790777"
+            },
+            {
+              "skill": "design_systems",
+              "initial_level": 1.4000000000000001,
+              "learning_source": "skill_correlation",
+              "probability": 0.3,
+              "learned_at": "2025-08-27T22:12:29.790778"
+            },
+            {
+              "skill": "devops",
+              "initial_level": 1.6,
+              "learning_source": "skill_correlation",
+              "probability": 0.3,
+              "learned_at": "2025-08-27T22:12:29.790779"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

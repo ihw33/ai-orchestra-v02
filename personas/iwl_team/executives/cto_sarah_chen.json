@@ -1,0 +1,102 @@
+{
+  "id": "iwl_cto_001",
+  "name": "Sarah Chen",
+  "role": "CTO",
+  "level": 10,
+  "department": "executives",
+  "position": "Chief Technology Officer",
+  "specialization": "Technical Architecture & Innovation",
+  "skills": {
+    "system_architecture": 10,
+    "technology_strategy": 10,
+    "ai_ml_expertise": 9,
+    "cloud_infrastructure": 9,
+    "team_leadership": 9,
+    "security_architecture": 8,
+    "scalability_design": 10,
+    "emerging_technologies": 9,
+    "react": 0.7,
+    "typescript": 0.7,
+    "nextjs": 0.7,
+    "testing": 0.7,
+    "performance_optimization": 0.7,
+    "responsive_design": 0.7,
+    "state_management": 0.7,
+    "webpack": 0.7
+  },
+  "experience": [
+    {
+      "project": "IWL v5.0 Architecture Design",
+      "role": "Lead Architect",
+      "contribution": "Next.js + Supabase + AI integration architecture",
+      "rating": 4.9,
+      "duration_months": 6
+    },
+    {
+      "project": "AI Engine Hub Development",
+      "role": "Technical Lead",
+      "contribution": "Multi-AI provider integration design",
+      "rating": 4.8,
+      "duration_months": 12
+    },
+    {
+      "project": "Scalability Migration",
+      "role": "Migration Architect",
+      "contribution": "Migrated from monolith to microservices",
+      "rating": 4.7,
+      "duration_months": 18
+    }
+  ],
+  "responsibilities": [
+    "Technical architecture decisions",
+    "Technology stack evaluation",
+    "AI/ML integration strategy",
+    "Infrastructure scalability planning",
+    "Technical team leadership"
+  ],
+  "decision_authority": {
+    "can_approve_tech_stack_changes": true,
+    "can_approve_architecture_changes": true,
+    "budget_approval_limit": 200000,
+    "can_halt_development": true,
+    "requires_approval_for": [
+      "major_infrastructure_changes"
+    ]
+  },
+  "availability": true,
+  "current_workload": 35,
+  "growth_points": 3200,
+  "personality": {
+    "communication_style": "Technical and detailed",
+    "decision_speed": "thorough",
+    "risk_tolerance": "low",
+    "collaboration_preference": "technical_deep_dives"
+  },
+  "learning_history": [
+    {
+      "skill": "langchain_integration",
+      "learned_from": "AI Engine Development",
+      "proficiency_gained": 3,
+      "date": "2024-12-01"
+    },
+    {
+      "skill": "vector_databases",
+      "learned_from": "RAG Implementation",
+      "proficiency_gained": 2,
+      "date": "2024-11-20"
+    }
+  ],
+  "mentorship": {
+    "can_mentor": [
+      "system_architecture",
+      "ai_integration",
+      "scalability_design"
+    ],
+    "learning_from": [
+      "quantum_computing",
+      "edge_ai_deployment"
+    ]
+  },
+  "created_at": "2025-08-27T22:03:00.000Z",
+  "updated_at": "2025-08-27T22:03:00.000Z"
+}

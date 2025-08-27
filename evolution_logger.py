@@ -58,6 +58,15 @@ class EvolutionLogger:
             "MCP_MEMORY_SEARCH": 3,
             "MCP_CONTEXT7_RESOLVE": 5,
             "MCP_CONTEXT7_DOCS": 5,
+            
+            # Context7 고도화 노드
+            "USE_LATEST_DOCS": 5,        # 최신 문서 사용
+            "AUTO_DOCS_LOAD": 3,          # 문서 자동 로드
+            "VALIDATE_SUCCESS": 8,        # API 검증 성공
+            "VALIDATE_ISSUES": 3,         # API 검증 이슈 발견
+            "DETECT_BREAKING": 10,        # Breaking change 감지
+            "AUTO_MIGRATE": 12,           # 자동 마이그레이션
+            "OUTDATED_API": -3,           # 구버전 API 사용
         }
         
         # 진화 단계 정의

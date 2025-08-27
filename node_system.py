@@ -63,6 +63,11 @@ class NodeType(Enum):
     MCP_MEMORY_SEARCH = "mcp_memory_search"       # 메모리 검색
     MCP_CONTEXT7_RESOLVE = "mcp_context7_resolve" # 라이브러리 ID 해석
     MCP_CONTEXT7_DOCS = "mcp_context7_docs"       # 문서 조회
+    
+    # Context7 고도화 노드들
+    SEARCH_DOCS_REALTIME = "search_docs_realtime"  # 실시간 문서 검색
+    AUTO_LOAD_PROJECT_DOCS = "auto_load_project_docs"  # 프로젝트 문서 자동 로드
+    VALIDATE_API_USAGE = "validate_api_usage"      # API 사용 검증
 
 class NodeStatus(Enum):
     """노드 실행 상태"""
