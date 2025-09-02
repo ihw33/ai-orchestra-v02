@@ -39,11 +39,19 @@ class TransparentReportingAdapter:
         
         print(f"\n🤖 {ai_type} 실행 중...")
         
-        # AI별 실행 명령
+        # AI별 실행 명령 - 이슈 전체 내용을 AI에게 전달
+        # gh issue view로 이슈 내용을 가져와서 AI에게 파이프로 전달
+        # 각 AI에게 자신의 체크리스트를 찾아서 수행하도록 지시
+        ai_prompts = {
+            'gemini': '아키텍처 설계 - Gemini 체크리스트 확인하고 Port와 Domain 파일 생성',
+            'claude': '핵심 구현 - Claude 체크리스트 확인하고 Adapter 파일 생성',
+            'codex': '백엔드/인프라 - Codex 체크리스트 확인하고 Store와 테스트 파일 생성'
+        }
+        
         commands = {
-            'gemini': f'gemini -p architect "Issue #{issue_number}: {task}"',
-            'claude': f'claude -p developer "Issue #{issue_number}: {task}"',
-            'codex': f'codex exec "Issue #{issue_number}: {task}"'
+            'gemini': f'echo "{ai_prompts["gemini"]}" && gh issue view {issue_number} -R {self.repo} | gemini -p architect',
+            'claude': f'echo "{ai_prompts["claude"]}" && gh issue view {issue_number} -R {self.repo} | claude -p developer', 
+            'codex': f'echo "{ai_prompts["codex"]}" && gh issue view {issue_number} -R {self.repo} | codex exec'
         }
         
         if ai_type not in commands:
