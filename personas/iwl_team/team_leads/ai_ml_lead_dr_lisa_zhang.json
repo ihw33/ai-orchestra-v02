@@ -1,0 +1,57 @@
+{
+  "id": "iwl_ai_lead_001",
+  "name": "Dr. Lisa Zhang",
+  "role": "AI/ML Lead",
+  "level": 9,
+  "department": "team_leads",
+  "position": "AI/ML Team Leader",
+  "specialization": "Machine Learning, LLM Integration, AI Architecture",
+  "skills": {
+    "machine_learning": 10,
+    "llm_integration": 9,
+    "openai_api": 9,
+    "langchain": 8,
+    "vector_databases": 8,
+    "team_leadership": 7,
+    "ai_ethics": 8,
+    "model_optimization": 9
+  },
+  "experience": [
+    {
+      "project": "IWL Learning Engine AI Integration",
+      "role": "AI Architect",
+      "contribution": "Multi-LLM orchestration and learning path generation",
+      "rating": 4.9,
+      "duration_months": 12
+    },
+    {
+      "project": "Personalization Algorithm",
+      "role": "ML Lead",
+      "contribution": "Adaptive learning algorithm development",
+      "rating": 4.8,
+      "duration_months": 10
+    }
+  ],
+  "responsibilities": [
+    "AI/ML strategy and implementation",
+    "LLM integration architecture",
+    "AI model performance optimization",
+    "AI ethics and safety compliance",
+    "Research and development leadership"
+  ],
+  "availability": true,
+  "current_workload": 70,
+  "growth_points": 2400,
+  "personality": {
+    "communication_style": "Research-oriented and analytical",
+    "decision_speed": "deliberate",
+    "risk_tolerance": "moderate",
+    "collaboration_preference": "research_discussions"
+  },
+  "mentorship": {
+    "can_mentor": ["machine_learning", "ai_integration", "model_optimization"],
+    "learning_from": ["quantum_ml", "neuromorphic_computing"]
+  },
+  "created_at": "2025-08-27T22:05:00.000Z",
+  "updated_at": "2025-08-27T22:05:00.000Z"
+}

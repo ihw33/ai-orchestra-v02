@@ -1,0 +1,75 @@
+# Golden Set Patterns - 성공한 구현 패턴 라이브러리
+# AI가 참조할 수 있는 검증된 패턴들
+
+patterns:
+  - id: "adapter_implementation"
+    name: "Port Adapter 구현"
+    description: "Port 인터페이스를 구현하는 Adapter 패턴"
+    trigger: "Port 인터페이스가 정의되었을 때"
+    reference:
+      file: "src/adapters/ai/ai_orchestration_adapter.py"
+      key_patterns:
+        - "Port import 및 상속"
+        - "subprocess를 통한 실제 명령 실행"
+        - "에러 핸들링 및 타임아웃"
+        - "결과를 GitHub에 포스팅"
+    ai_prompt_template: |
+      {port_file}을 보고 이를 구현하는 Adapter를 작성하세요.
+      참고: golden_sets/patterns.yaml의 adapter_implementation 패턴
+      기존 구현: src/adapters/ai/ai_orchestration_adapter.py
+    success_criteria:
+      - "Port의 모든 추상 메서드 구현"
+      - "적절한 에러 핸들링"
+      - "Provenance 메타데이터 포함"
+    
+  - id: "issue_to_workflow"
+    name: "GitHub 이슈를 워크플로우로 변환"
+    description: "이슈 내용을 분석하여 적절한 AI 워크플로우 선택"
+    trigger: "새로운 GitHub 이슈 생성"
+    reference:
+      file: "unified_orchestrator.py"
+      methods: ["detect_pattern", "process_github_issue"]
+    ai_prompt_template: |
+      Issue #{issue_number}를 분석하여:
+      1. 작업 유형 판단 (analysis/implementation/bugfix/test)
+      2. 필요한 AI 시퀀스 결정
+      3. 각 AI의 역할 정의
+    
+  - id: "persona_assignment"
+    name: "페르소나 자동 할당"
+    description: "작업에 적합한 페르소나 선택 및 팀 구성"
+    trigger: "[AI] 태그가 있는 이슈"
+    reference:
+      file: "personas/auto_persona_injector.py"
+      methods: ["process_issue", "build_team"]
+    
+  - id: "error_recovery"
+    name: "AI 실행 실패 복구"
+    description: "AI 실행 실패 시 복구 전략"
+    trigger: "AI 실행 에러 또는 타임아웃"
+    escalation_steps:
+      - level: 1
+        action: "재시도 (더 간단한 프롬프트)"
+      - level: 2
+        action: "다른 AI로 전환"
+      - level: 3
+        action: "작업을 더 작은 단위로 분해"
+      - level: 4
+        action: "PM에게 에스컬레이션"
+
+# 학습된 실패 패턴 (피해야 할 것들)
+anti_patterns:
+  - id: "pm_writes_code"
+    name: "PM이 직접 코드 작성"
+    problem: "PM이 AI 대신 구현 코드 작성"
+    solution: "Golden Set 참조 또는 더 명확한 지시"
+    
+  - id: "infinite_retry"
+    name: "무한 재시도"
+    problem: "같은 프롬프트로 계속 실패"
+    solution: "에스컬레이션 프로세스 따르기"
+    
+  - id: "no_provenance"
+    name: "출처 추적 없음"
+    problem: "AI 생성 코드의 출처 불명"
+    solution: "모든 결과에 Provenance 메타데이터 필수"

@@ -1,0 +1,19 @@
+{
+  "repo": "ihw33/ai-orchestra-v02",
+  "timeout": 300,
+  "retry_count": 3,
+  "ai_models": {
+    "gemini": {
+      "timeout": 120,
+      "retry": 3
+    },
+    "claude": {
+      "timeout": 180,
+      "retry": 2
+    },
+    "codex": {
+      "timeout": 150,
+      "retry": 2
+    }
+  }
+}

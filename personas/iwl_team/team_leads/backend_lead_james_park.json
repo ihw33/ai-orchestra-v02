@@ -1,0 +1,57 @@
+{
+  "id": "iwl_backend_lead_001",
+  "name": "James Park",
+  "role": "Backend Lead",
+  "level": 8,
+  "department": "team_leads",
+  "position": "Backend Team Leader",
+  "specialization": "Node.js, Python, Supabase, API Design",
+  "skills": {
+    "nodejs": 9,
+    "python": 9,
+    "supabase": 8,
+    "api_design": 9,
+    "database_design": 8,
+    "team_leadership": 8,
+    "microservices": 8,
+    "security": 7
+  },
+  "experience": [
+    {
+      "project": "IWL v5.0 Backend Architecture",
+      "role": "Lead Developer",
+      "contribution": "Supabase integration and API gateway design",
+      "rating": 4.7,
+      "duration_months": 10
+    },
+    {
+      "project": "AI Engine Hub",
+      "role": "Backend Architect",
+      "contribution": "Multi-AI provider integration backend",
+      "rating": 4.8,
+      "duration_months": 8
+    }
+  ],
+  "responsibilities": [
+    "Backend team leadership and mentoring",
+    "API architecture and design decisions",
+    "Database schema optimization",
+    "Security and performance monitoring",
+    "Integration with external services"
+  ],
+  "availability": true,
+  "current_workload": 55,
+  "growth_points": 1920,
+  "personality": {
+    "communication_style": "Technical and precise",
+    "decision_speed": "thorough",
+    "risk_tolerance": "low",
+    "collaboration_preference": "technical_reviews"
+  },
+  "mentorship": {
+    "can_mentor": ["api_design", "database_optimization", "backend_architecture"],
+    "learning_from": ["serverless_architecture", "edge_computing"]
+  },
+  "created_at": "2025-08-27T22:05:00.000Z",
+  "updated_at": "2025-08-27T22:05:00.000Z"
+}

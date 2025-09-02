@@ -1,0 +1,185 @@
+name: AI Task Enhanced Automation
+on:
+  issues:
+    types: [opened, edited]
+    
+jobs:
+  process-ai-task:
+    if: contains(github.event.issue.title, '[AI]')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install asyncio pyyaml
+      
+      # 1. 관련 이슈 교차 링크
+      - name: Cross-link related issues
+        run: |
+          python -c "
+          import sys
+          import asyncio
+          sys.path.append('.')
+          from nodes.cross_link_issues_node import CrossLinkIssuesNode
+          
+          async def main():
+              node = CrossLinkIssuesNode()
+              result = await node.execute({
+                  'new_issue_id': '${{ github.event.issue.number }}',
+                  'issue_body': '''${{ github.event.issue.body }}''',
+                  'repo': '${{ github.repository }}'
+              })
+              print(f'Cross-linked {result.get(\"linked_issues\", 0)} issues')
+          
+          asyncio.run(main())
+          "
+      
+      # 2. 브랜치 자동 생성
+      - name: Create feature branch
+        run: |
+          python -c "
+          import sys
+          import asyncio
+          sys.path.append('.')
+          from nodes.auto_branch_creation_node import AutoBranchCreationNode
+          
+          async def main():
+              node = AutoBranchCreationNode()
+              result = await node.execute({
+                  'issue_number': '${{ github.event.issue.number }}',
+                  'issue_title': '''${{ github.event.issue.title }}''',
+                  'issue_body': '''${{ github.event.issue.body }}''',
+                  'base_branch': 'main'
+              })
+              print(f'Branch created: {result.get(\"branch_name\")}')
+              
+              # 환경 변수로 브랜치명 저장
+              import os
+              with open(os.environ['GITHUB_ENV'], 'a') as f:
+                  f.write(f'BRANCH_NAME={result.get(\"branch_name\")}\\n')
+          
+          asyncio.run(main())
+          "
+      
+      # 3. 초기 진행 상황 보고
+      - name: Report initial progress
+        run: |
+          python -c "
+          import sys
+          import asyncio
+          sys.path.append('.')
+          from nodes.progress_reporting_node import ProgressReportingNode
+          
+          async def main():
+              reporter = ProgressReportingNode()
+              
+              # 작업 시작 보고
+              await reporter.execute({
+                  'issue_number': '${{ github.event.issue.number }}',
+                  'task_name': 'AI Task Automation',
+                  'status': 'in_progress',
+                  'details': 'Starting automated AI task processing...',
+                  'checklist': [
+                      {'task': 'Parse issue template', 'done': True},
+                      {'task': 'Create branch', 'done': True},
+                      {'task': 'Trigger AI agents', 'done': False},
+                      {'task': 'Generate code', 'done': False},
+                      {'task': 'Create PR', 'done': False}
+                  ],
+                  'ai_agent': 'system'
+              })
+          
+          asyncio.run(main())
+          "
+      
+      # 4. AI 에이전트 트리거 (기존 로직)
+      - name: Trigger AI Agents
+        run: |
+          echo "Triggering Gemini for architecture design..."
+          # gemini -p "Design architecture for issue #${{ github.event.issue.number }}"
+          
+          echo "Triggering Claude for implementation..."
+          # claude -p "Implement features for issue #${{ github.event.issue.number }}"
+          
+          echo "Triggering Codex for backend..."
+          # codex exec "Implement backend for issue #${{ github.event.issue.number }}"
+      
+      # 5. 이슈 메타데이터 파싱 및 처리
+      - name: Parse issue metadata
+        run: |
+          python -c "
+          import re
+          import yaml
+          
+          issue_body = '''${{ github.event.issue.body }}'''
+          
+          # AI 메타데이터 추출
+          metadata_match = re.search(r'```\nai_metadata:(.*?)```', issue_body, re.DOTALL)
+          if metadata_match:
+              metadata_str = metadata_match.group(1)
+              metadata = yaml.safe_load(metadata_str)
+              
+              print(f'Priority: {metadata.get(\"priority\")}')
+              print(f'Estimated hours: {metadata.get(\"estimated_hours\")}')
+              print(f'Auto merge: {metadata.get(\"auto_merge\")}')
+              
+              # 우선순위에 따른 라벨 추가
+              priority = metadata.get('priority', 'medium')
+              if priority == 'high':
+                  print('::set-output name=label::priority-high')
+              elif priority == 'low':
+                  print('::set-output name=label::priority-low')
+          "
+        id: metadata
+      
+      # 6. 라벨 추가
+      - name: Add priority label
+        if: steps.metadata.outputs.label
+        run: |
+          gh issue edit ${{ github.event.issue.number }} \
+            --add-label "${{ steps.metadata.outputs.label }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # 7. 작업 완료 보고
+      - name: Report completion
+        if: always()
+        run: |
+          python -c "
+          import sys
+          import asyncio
+          sys.path.append('.')
+          from nodes.progress_reporting_node import ProgressReportingNode
+          
+          async def main():
+              reporter = ProgressReportingNode()
+              
+              status = 'completed' if '${{ job.status }}' == 'success' else 'failed'
+              
+              await reporter.execute({
+                  'issue_number': '${{ github.event.issue.number }}',
+                  'task_name': 'AI Task Automation',
+                  'status': status,
+                  'details': 'Workflow execution finished',
+                  'checklist': [
+                      {'task': 'Parse issue template', 'done': True},
+                      {'task': 'Create branch', 'done': True},
+                      {'task': 'Trigger AI agents', 'done': True},
+                      {'task': 'Generate code', 'done': status == 'completed'},
+                      {'task': 'Create PR', 'done': False}
+                  ],
+                  'ai_agent': 'system'
+              })
+          
+          asyncio.run(main())
+          "

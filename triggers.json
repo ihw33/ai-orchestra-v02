@@ -1,0 +1,56 @@
+{
+  "github_issue_created": {
+    "condition": {
+      "type": "github_event",
+      "pattern": null,
+      "keywords": null,
+      "event_name": "opened",
+      "schedule": null
+    },
+    "action": {
+      "name": "process_new_issue",
+      "handler": "pm_processor_adapter.process_issue",
+      "params": null,
+      "async": false
+    },
+    "enabled": true
+  },
+  "ai_task_trigger": {
+    "condition": {
+      "type": "keyword",
+      "pattern": null,
+      "keywords": [
+        "[AI]",
+        "ai-task",
+        "needs-ai"
+      ],
+      "event_name": null,
+      "schedule": null
+    },
+    "action": {
+      "name": "execute_ai_workflow",
+      "handler": "orchestrator_adapter.execute_workflow",
+      "params": {
+        "workflow_name": "ai_processing"
+      },
+      "async": false
+    },
+    "enabled": true
+  },
+  "pr_review_trigger": {
+    "condition": {
+      "type": "github_event",
+      "pattern": null,
+      "keywords": null,
+      "event_name": "pull_request",
+      "schedule": null
+    },
+    "action": {
+      "name": "execute_code_review",
+      "handler": "code_review_workflow.execute_full_review_cycle",
+      "params": null,
+      "async": false
+    },
+    "enabled": true
+  }
+}

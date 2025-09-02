@@ -1,0 +1,46 @@
+name: "General Task"
+description: AI가 필요 없는 일반 작업
+title: "<작업 제목>"
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 일반 작업
+        이 템플릿은 AI 협업이 필요 없는 일반 작업용입니다.
+        
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📂 카테고리
+      options:
+        - 📝 문서 업데이트
+        - ⚙️ 환경 설정
+        - 📦 의존성 관리
+        - 🔧 간단한 수정
+        - 📊 프로젝트 관리
+    validations:
+      required: true
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 작업 설명
+      placeholder: 무엇을 해야 하는지 간단히 설명하세요
+    validations:
+      required: true
+      
+  - type: textarea
+    id: checklist
+    attributes:
+      label: ✅ 체크리스트
+      placeholder: |
+        - [ ] README 업데이트
+        - [ ] 설치 가이드 추가
+        
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ⚠️ **참고**: 이 이슈는 AI가 자동 처리하지 않습니다.
+        PM 또는 개발자가 직접 처리해야 합니다.

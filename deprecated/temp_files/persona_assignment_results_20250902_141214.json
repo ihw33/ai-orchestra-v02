@@ -1,0 +1,144 @@
+[
+  {
+    "scenario": "긴급 서버 장애",
+    "task": "긴급! 프로덕션 서버가 다운됐습니다. 즉시 복구 필요",
+    "requirements": {
+      "complexity": "medium",
+      "type": "implementation",
+      "priority": "critical",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "PM Claude",
+    "assigned_ai": "claude",
+    "reason": "PM Claude의 전문 분야가 이 작업에 적합. 결정 권한 80% 수준이 적절. 프로젝트 매니저 (나)이 이 유형의 작업을 담당. 중요도가 높아 PM이 직접 관여 필요"
+  },
+  {
+    "scenario": "DDD 아키텍처 설계",
+    "task": "도메인 기반 개발을 위한 복잡한 시스템 아키텍처 설계",
+    "requirements": {
+      "complexity": "complex",
+      "type": "design",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "System Architect",
+    "assigned_ai": "claude",
+    "reason": "System Architect의 전문 분야가 이 작업에 적합. 결정 권한 70% 수준이 적절. 시스템 아키텍트이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "타이포 수정",
+    "task": "README.md 파일의 간단한 오타 수정",
+    "requirements": {
+      "complexity": "simple",
+      "type": "implementation",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "REST API 구현",
+    "task": "사용자 인증을 위한 REST API 엔드포인트 구현",
+    "requirements": {
+      "complexity": "medium",
+      "type": "api",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "PR 리뷰",
+    "task": "PR #35의 코드 리뷰 수행",
+    "requirements": {
+      "complexity": "medium",
+      "type": "review",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Code Reviewer",
+    "assigned_ai": "claude",
+    "reason": "Code Reviewer의 전문 분야가 이 작업에 적합. 결정 권한 40% 수준이 적절. 코드 리뷰어이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "대시보드 UI",
+    "task": "관리자 대시보드 UI 컴포넌트 개발",
+    "requirements": {
+      "complexity": "medium",
+      "type": "ui",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "DB 최적화",
+    "task": "데이터베이스 쿼리 성능 최적화",
+    "requirements": {
+      "complexity": "medium",
+      "type": "implementation",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "어댑터 구현",
+    "task": "새로운 결제 시스템을 위한 Port/Adapter 패턴 구현",
+    "requirements": {
+      "complexity": "medium",
+      "type": "implementation",
+      "priority": "medium",
+      "skills_needed": [
+        "패턴"
+      ],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "통합 테스트",
+    "task": "전체 시스템 통합 테스트 작성",
+    "requirements": {
+      "complexity": "medium",
+      "type": "testing",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  },
+  {
+    "scenario": "API 문서",
+    "task": "API 사용 가이드 문서 작성",
+    "requirements": {
+      "complexity": "medium",
+      "type": "api",
+      "priority": "medium",
+      "skills_needed": [],
+      "estimated_effort": "medium"
+    },
+    "selected_persona": "Backend Developer",
+    "assigned_ai": "codex",
+    "reason": "Backend Developer의 전문 분야가 이 작업에 적합. 결정 권한 30% 수준이 적절. 백엔드 개발자이 이 유형의 작업을 담당"
+  }
+]
