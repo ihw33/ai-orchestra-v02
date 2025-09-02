@@ -1,0 +1,28 @@
+# 삭제/이동할 파일 목록
+
+## 이미 통합된 파일 (삭제 가능)
+fixed_pm_auto_processor.py  # pm_auto_processor.py로 통합됨
+fixed_relay_pipeline.py     # relay_pipeline_system.py로 통합됨
+multi_ai_orchestrator.py    # unified_orchestrator.py로 통합됨 (확인 후)
+master_orchestrator.py      # unified_orchestrator.py로 통합됨 (확인 후)
+
+## 중복 AI 통신 파일 (통합 필요)
+gemini_background.py
+gemini_conversation.py
+gemini_iterm_api.py
+codex_fixed.py
+codex_refactored.py
+
+## 테스트 파일 (tests/ 폴더로 이동)
+test_auto_issue.py
+test_github_integration.py
+test_integration_simple.py
+test_live_demo.py
+test_orchestrator.py
+test_persona_integration.py
+test_pr29_fixes.py
+
+## 데모 파일 (examples/ 폴더로 이동)
+demo_real_execution.py
+complex_workflow_demo.py
+live_github_demo.py
