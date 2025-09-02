@@ -1,0 +1,207 @@
+name: AI Orchestra - Complete Automation
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+jobs:
+  # Job 1: 새 이슈 처리
+  process-new-issue:
+    if: |
+      github.event_name == 'issues' && 
+      contains(github.event.issue.title, '[AI]')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          pip install asyncio pyyaml requests
+          pip install PyGithub
+          
+      - name: Run Enhanced AI Workflow
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -c "
+          import os
+          import sys
+          import asyncio
+          import subprocess
+          
+          # 프로젝트 경로 추가
+          sys.path.insert(0, '.')
+          
+          # Enhanced workflow 실행
+          from dags.enhanced_ai_task_dag import EnhancedAITaskDAG
+          
+          async def main():
+              dag = EnhancedAITaskDAG()
+              
+              # 이슈 정보
+              issue_number = '${{ github.event.issue.number }}'
+              issue_title = '''${{ github.event.issue.title }}'''
+              issue_body = '''${{ github.event.issue.body }}'''
+              repo = '${{ github.repository }}'
+              
+              print(f'🚀 Processing Issue #{issue_number}: {issue_title}')
+              
+              # 워크플로우 실행
+              result = await dag.execute({
+                  'issue_number': issue_number,
+                  'issue_title': issue_title,
+                  'issue_body': issue_body,
+                  'repo': repo
+              })
+              
+              if result.get('success'):
+                  print(f'✅ Workflow completed successfully!')
+                  print(f'   Branch: {result.get(\"branch\")}')
+                  
+                  # IWL Executor 트리거
+                  if 'iwl' in issue_title.lower() or 'iwl' in issue_body.lower():
+                      print('🤖 Triggering IWL Executor...')
+                      subprocess.run([
+                          sys.executable,
+                          'executors/iwl_executor.py',
+                          '--issue-id', issue_number,
+                          '--workflow', 'feature_development'
+                      ])
+              else:
+                  print(f'❌ Workflow failed')
+                  sys.exit(1)
+          
+          asyncio.run(main())
+          "
+          
+      - name: Trigger AI Agents
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # AI 에이전트 트리거 스크립트
+          python -c "
+          import os
+          import time
+          import subprocess
+          from github import Github
+          
+          # GitHub 클라이언트
+          g = Github(os.environ['GITHUB_TOKEN'])
+          repo = g.get_repo('${{ github.repository }}')
+          issue = repo.get_issue(${{ github.event.issue.number }})
+          
+          # 이슈 본문 파싱하여 AI 역할 추출
+          body = issue.body or ''
+          
+          print('🤖 Assigning AI Agents...')
+          
+          # 코멘트로 AI 에이전트 작업 시작 알림
+          agents = {
+              'gemini': '🔷 Gemini: Architecture & Design',
+              'claude': '🔵 Claude: Implementation',
+              'codex': '🔶 Codex: Backend Services'
+          }
+          
+          for agent, description in agents.items():
+              comment = f'''
+## {description}
+Starting automated task processing for Issue #{issue.number}
+              
+**Agent**: {agent}
+**Status**: 🔄 In Progress
+**Started**: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}
+              '''
+              issue.create_comment(comment)
+              print(f'   ✅ {agent} assigned')
+          "
+
+  # Job 2: 이슈 코멘트 명령 처리
+  process-commands:
+    if: |
+      github.event_name == 'issue_comment' &&
+      contains(github.event.comment.body, '/ai')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Parse and Execute Command
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python -c "
+          import re
+          from github import Github
+          
+          comment = '''${{ github.event.comment.body }}'''
+          
+          # 명령어 파싱
+          if '/ai status' in comment:
+              # 상태 확인
+              print('Checking workflow status...')
+              
+          elif '/ai run' in comment:
+              # 워크플로우 재실행
+              print('Re-running workflow...')
+              
+          elif '/ai assign' in comment:
+              # 페르소나 할당
+              match = re.search(r'/ai assign (\w+)', comment)
+              if match:
+                  persona = match.group(1)
+                  print(f'Assigning persona: {persona}')
+          "
+
+  # Job 3: PR 자동 생성
+  auto-create-pr:
+    needs: [process-new-issue]
+    if: success()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 브랜치가 생성되었다면 PR 생성
+          BRANCH_NAME=$(git branch -r | grep -E "feat/.*-${{ github.event.issue.number }}$" | head -1 | tr -d ' ')
+          
+          if [ -n "$BRANCH_NAME" ]; then
+            gh pr create \
+              --title "Implements #${{ github.event.issue.number }}" \
+              --body "## Summary
+              
+Automated implementation for Issue #${{ github.event.issue.number }}
+              
+## Changes
+- Implemented by AI Orchestra
+- Cross-linked with related issues
+- Tests included
+              
+## Related Issues
+Closes #${{ github.event.issue.number }}
+              
+---
+🤖 Generated by AI Orchestra v3.0" \
+              --base main \
+              --head "${BRANCH_NAME##*/}" \
+              --label "ai-generated" \
+              || echo "PR already exists or branch not ready"
+          fi

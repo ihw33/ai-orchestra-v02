@@ -66,6 +66,13 @@
     }
   },
   
+  "superclaude_commands": [
+    "/SC Design",
+    "/SC Frontend",
+    "/SC Implement",
+    "/SC Test"
+  ],
+  
   "interests": {
     "technical": ["디자인 시스템", "웹 접근성", "마이크로 인터랙션"],
     "personal": ["서핑", "요가", "브라질 음악", "여행", "커피"]

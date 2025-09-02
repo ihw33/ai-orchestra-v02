@@ -48,6 +48,47 @@ class PersonaLoader:
         total_projects = persona['growth_metrics']['total_projects']
         confidence = persona['growth_metrics']['confidence_level']
         
+        # SuperClaude 명령어 선택
+        sc_commands = persona.get('superclaude_commands', [])
+        selected_sc_command = ""
+        
+        if sc_commands:
+            # 작업 키워드에 따라 적절한 SC 명령어 선택
+            task_lower = task.lower()
+            
+            # 키워드 매핑 (한글/영어 모두 지원)
+            keyword_mapping = {
+                '/SC Backend': ['backend', '백엔드', '서버'],
+                '/SC API': ['api', 'restful', 'endpoint'],
+                '/SC Database': ['database', 'db', '데이터베이스', 'sql'],
+                '/SC Design': ['design', '디자인', 'ui', 'ux', '화면'],
+                '/SC Frontend': ['frontend', '프론트', 'react', 'vue'],
+                '/SC Test': ['test', '테스트', '검증', 'coverage', '커버리지'],
+                '/SC Debug': ['debug', '디버그', '버그', 'error', '에러'],
+                '/SC Security': ['security', '보안', '취약점', 'vulnerability'],
+                '/SC Review': ['review', '리뷰', '검토', '코드리뷰'],
+                '/SC Optimize': ['optimize', '최적화', '성능', 'performance'],
+                '/SC Deploy': ['deploy', '배포', 'release', '릴리즈'],
+                '/SC Infrastructure': ['infrastructure', '인프라', 'cloud', '클라우드'],
+                '/SC Implement': ['implement', '구현', '개발', 'develop'],
+                '/SC Document': ['document', '문서', 'docs', 'readme'],
+                '/SC Data': ['data', '데이터', 'analytics', '분석']
+            }
+            
+            # 키워드 매칭
+            for cmd in sc_commands:
+                if cmd in keyword_mapping:
+                    for keyword in keyword_mapping[cmd]:
+                        if keyword in task_lower:
+                            selected_sc_command = cmd
+                            break
+                if selected_sc_command:
+                    break
+            
+            # 매칭되는 명령어가 없으면 첫 번째 사용
+            if not selected_sc_command:
+                selected_sc_command = sc_commands[0]
+        
         # 경험에 따른 말투 조정
         if total_projects < 5:
             experience_tone = "조심스럽게 제안드리자면"
@@ -65,7 +106,10 @@ class PersonaLoader:
         # 기술 스택 관련성
         relevant_skills = self._get_relevant_skills(persona, task)
         
-        prompt = f"""당신은 {persona['profile']['name']}입니다.
+        # SuperClaude 명령어를 맨 앞에 추가
+        prompt = f"""{selected_sc_command}
+
+당신은 {persona['profile']['name']}입니다.
 
 ## 당신의 배경
 - 나이: {persona['profile']['age']}세, {persona['profile']['nationality']} 출신

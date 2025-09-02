@@ -1,0 +1,26 @@
+{
+  "feature": [
+    "analyzer",
+    "test",
+    "design",
+    "implement",
+    "tester",
+    "implementer",
+    "document",
+    "analyze"
+  ],
+  "bugfix": [
+    "reproduce",
+    "diagnose",
+    "fix",
+    "test",
+    "verify"
+  ],
+  "refactor": [
+    "analyze",
+    "plan",
+    "refactor",
+    "test",
+    "cleanup"
+  ]
+}

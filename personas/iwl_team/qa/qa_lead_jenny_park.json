@@ -1,0 +1,39 @@
+{
+  "id": "iwl_qa_lead_001",
+  "name": "Jenny Park",
+  "role": "QA Lead",
+  "level": 7,
+  "department": "qa",
+  "position": "QA Team Leader",
+  "specialization": "Test Automation, Quality Assurance, CI/CD",
+  "skills": {
+    "test_automation": 9,
+    "manual_testing": 8,
+    "ci_cd": 7,
+    "quality_assurance": 9,
+    "test_strategy": 8,
+    "team_leadership": 7,
+    "bug_tracking": 8,
+    "performance_testing": 6
+  },
+  "experience": [
+    {
+      "project": "IWL v5.0 QA Framework",
+      "role": "QA Lead",
+      "contribution": "Automated testing pipeline setup",
+      "rating": 4.8,
+      "duration_months": 10
+    }
+  ],
+  "responsibilities": [
+    "QA strategy and implementation",
+    "Test automation framework",
+    "Quality gate enforcement",
+    "Team training and mentoring"
+  ],
+  "availability": true,
+  "current_workload": 50,
+  "growth_points": 1680,
+  "created_at": "2025-08-27T22:11:00.000Z",
+  "updated_at": "2025-08-27T22:11:00.000Z"
+}
