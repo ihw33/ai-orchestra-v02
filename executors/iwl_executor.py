@@ -23,6 +23,11 @@ from nodes.iwl_development_node import IWLDevelopmentNode
 from dags.iwl_development_dag import IWLDevelopmentDAG
 from personas.persona_loader import PersonaLoader
 
+# 재귀 성장 시스템 임포트
+from generators.recursive_node_generator import RecursiveNodeGenerator
+from generators.recursive_dag_composer import RecursiveDAGComposer
+from generators.ai_interface import AIInterface
+
 
 class IWLExecutor:
     """IWL Orchestra 시스템 통합 실행기"""
@@ -31,6 +36,11 @@ class IWLExecutor:
         self.iwl_node = IWLDevelopmentNode()
         self.iwl_dag = IWLDevelopmentDAG()
         self.persona_loader = PersonaLoader()
+        
+        # 재귀 성장 시스템 초기화
+        self.node_generator = RecursiveNodeGenerator()
+        self.dag_composer = RecursiveDAGComposer()
+        self.ai_interface = AIInterface()
         
         # 설정
         self.iwl_repo = "ihw33/iwl-v5-rebuild"
@@ -66,12 +76,25 @@ class IWLExecutor:
         self.logger = logging.getLogger(__name__)
     
     async def execute_issue(self, issue_id: str, workflow_type: str = "feature_development") -> Dict:
-        """이슈 실행 (비동기)"""
+        """이슈 실행 (비동기) - 재귀 성장 시스템 통합"""
         start_time = time.time()
         
         self.logger.info(f"🚀 Starting IWL issue execution: #{issue_id}")
         
         try:
+            # 0. 이슈 내용 가져오기
+            issue_body = await self.get_issue_body(issue_id)
+            
+            # 🔄 재귀 성장: 새로운 노드 필요한지 체크
+            analysis = self.ai_interface.analyze_issue(issue_body)
+            self.logger.info(f"🧬 Issue analysis: {analysis}")
+            
+            # 필요한 노드가 없으면 자동 생성
+            await self.ensure_required_nodes(analysis)
+            
+            # 적합한 DAG가 없으면 자동 구성
+            await self.ensure_required_dag(analysis)
+            
             # 1. 페르소나 가용성 체크
             available_personas = await self.check_persona_availability()
             self.logger.info(f"📊 Available personas: {len(available_personas)}")
@@ -171,6 +194,57 @@ class IWLExecutor:
         except Exception as e:
             self.logger.error(f"이슈 우선순위 분석 실패: {e}")
             return "medium"
+    
+    async def get_issue_body(self, issue_id: str) -> str:
+        """이슈 내용 가져오기"""
+        try:
+            cmd = f"gh issue view {issue_id} -R {self.iwl_repo} --json body"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            data = json.loads(result.stdout)
+            return data.get('body', '')
+        except Exception as e:
+            self.logger.error(f"이슈 내용 가져오기 실패: {e}")
+            return ""
+    
+    async def ensure_required_nodes(self, analysis: Dict):
+        """필요한 노드가 있는지 확인하고 없으면 생성"""
+        required_nodes = analysis.get('required_nodes', [])
+        nodes_dir = Path(__file__).parent.parent / "nodes"
+        existing_nodes = [f.stem for f in nodes_dir.glob("*.py")]
+        
+        for node_type in required_nodes:
+            node_name = f"{node_type}_node"
+            if node_name not in existing_nodes:
+                self.logger.info(f"🔄 새로운 노드 필요: {node_type}")
+                
+                # AI를 사용하여 노드 코드 생성
+                requirements = {
+                    'description': f"Auto-generated node for {node_type}",
+                    'context': analysis
+                }
+                code = self.ai_interface.generate_node_code(node_type, requirements)
+                
+                # 노드 저장
+                if code:
+                    self.node_generator.save_new_node(node_type, code)
+                    self.logger.info(f"✨ 새 노드 생성됨: {node_type}")
+                else:
+                    self.logger.warning(f"노드 생성 실패: {node_type}")
+    
+    async def ensure_required_dag(self, analysis: Dict):
+        """필요한 DAG가 있는지 확인하고 없으면 생성"""
+        task_type = analysis.get('task_type', 'general')
+        dags_dir = Path(__file__).parent.parent / "dags"
+        existing_dags = [f.stem for f in dags_dir.glob("*.py")]
+        
+        dag_name = f"{task_type}_dag"
+        if dag_name not in existing_dags:
+            self.logger.info(f"🔄 새로운 DAG 필요: {task_type}")
+            
+            # DAG 자동 구성
+            dag_code = self.dag_composer.compose_dag(analysis)
+            self.dag_composer.save_dag(dag_code, dag_name)
+            self.logger.info(f"✨ 새 DAG 생성됨: {dag_name}")
     
     async def allocate_resources(self, issue_id: str, priority: str) -> Dict:
         """리소스 할당"""
