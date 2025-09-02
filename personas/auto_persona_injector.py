@@ -96,12 +96,11 @@ class AutoPersonaInjector:
         
         ai_tool = ai_mapping.get(persona['profile']['id'], "gemini")
         
-        # 프롬프트를 파일로 저장 (너무 길어서)
-        prompt_file = f"/tmp/persona_{persona['profile']['id']}_prompt.txt"
-        with open(prompt_file, 'w', encoding='utf-8') as f:
-            f.write(prompt)
+        # 프롬프트를 직접 전달 (파일 사용 시 문제 발생)
+        # 특수 문자 이스케이프
+        escaped_prompt = prompt.replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
         
-        return f"{ai_tool} -p \"$(cat {prompt_file})\""
+        return f'{ai_tool} -p "{escaped_prompt}"'
     
     def execute_with_personas(self, issue_data: Dict):
         """페르소나와 함께 AI 실행"""
@@ -114,12 +113,47 @@ class AutoPersonaInjector:
             print(f"\n🎭 {cmd_data['persona']} 작업 중...")
             print(f"역할: {cmd_data['role']}")
             
-            # 실제 AI 실행 (시뮬레이션)
-            # result = subprocess.run(cmd_data['command'], shell=True, capture_output=True, text=True)
-            # results.append(result.stdout)
+            # 실제 AI 실행
+            print(f"실행 중: {cmd_data['command'][:100]}...")
             
-            # 테스트용 출력
-            print(f"명령: {cmd_data['command'][:100]}...")
+            try:
+                result = subprocess.run(
+                    cmd_data['command'], 
+                    shell=True, 
+                    capture_output=True, 
+                    text=True,
+                    timeout=120  # 2분 타임아웃
+                )
+                
+                if result.returncode == 0:
+                    print(f"✅ {cmd_data['persona']} 완료")
+                    results.append({
+                        'persona': cmd_data['persona'],
+                        'success': True,
+                        'output': result.stdout
+                    })
+                else:
+                    print(f"❌ {cmd_data['persona']} 실패: {result.stderr}")
+                    results.append({
+                        'persona': cmd_data['persona'],
+                        'success': False,
+                        'error': result.stderr
+                    })
+                    
+            except subprocess.TimeoutExpired:
+                print(f"⏰ {cmd_data['persona']} 타임아웃")
+                results.append({
+                    'persona': cmd_data['persona'],
+                    'success': False,
+                    'error': 'Timeout after 120 seconds'
+                })
+            except Exception as e:
+                print(f"❌ {cmd_data['persona']} 에러: {str(e)}")
+                results.append({
+                    'persona': cmd_data['persona'],
+                    'success': False,
+                    'error': str(e)
+                })
         
         return results
 
@@ -147,10 +181,36 @@ class IssueWorkflowIntegration:
             )
             
             # AI 실행
-            self.persona_injector.execute_with_personas(persona_data)
+            results = self.persona_injector.execute_with_personas(persona_data)
+            
+            # GitHub에 결과 포스팅
+            self._post_results_to_github(issue_number, results)
             
             # 경험 업데이트
             self._update_experiences(persona_data)
+    
+    def _post_results_to_github(self, issue_number: int, results: list):
+        """AI 실행 결과를 GitHub 이슈에 포스팅"""
+        if not results:
+            return
+            
+        # 결과 포맷팅
+        comment = "## 🤖 AI 팀 작업 결과\n\n"
+        
+        for result in results:
+            if result['success']:
+                comment += f"### ✅ {result['persona']}\n"
+                comment += f"```\n{result['output'][:1000]}\n```\n\n"
+            else:
+                comment += f"### ❌ {result['persona']}\n"
+                comment += f"에러: {result['error']}\n\n"
+        
+        comment += "---\n*AI Orchestra v02 - 자동 실행*"
+        
+        # GitHub에 코멘트 추가
+        cmd = f'gh issue comment {issue_number} -R ihw33/ai-orchestra-v02 --body "{comment}"'
+        subprocess.run(cmd, shell=True)
+        print(f"📝 결과를 Issue #{issue_number}에 포스팅했습니다")
     
     def _update_experiences(self, persona_data: Dict):
         """작업 완료 후 경험 자동 업데이트"""

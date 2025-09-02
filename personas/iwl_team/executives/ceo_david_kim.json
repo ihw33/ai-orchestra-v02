@@ -1,0 +1,78 @@
+{
+  "id": "iwl_ceo_001",
+  "name": "David Kim",
+  "role": "CEO",
+  "level": 10,
+  "department": "executives",
+  "position": "Chief Executive Officer",
+  "specialization": "Strategic Leadership & Business Vision",
+  "skills": {
+    "strategic_planning": 10,
+    "business_development": 10,
+    "stakeholder_management": 10,
+    "market_analysis": 9,
+    "product_vision": 9,
+    "team_leadership": 10,
+    "decision_making": 10,
+    "risk_management": 9
+  },
+  "experience": [
+    {
+      "project": "IWL v4.0 Launch",
+      "role": "Strategic Oversight",
+      "contribution": "Market positioning and go-to-market strategy",
+      "rating": 4.8,
+      "duration_months": 18
+    },
+    {
+      "project": "AI Learning Platform Acquisition",
+      "role": "M&A Lead",
+      "contribution": "Due diligence and integration strategy", 
+      "rating": 4.7,
+      "duration_months": 12
+    },
+    {
+      "project": "Series B Funding",
+      "role": "Fundraising Lead",
+      "contribution": "Investor relations and pitch development",
+      "rating": 4.9,
+      "duration_months": 8
+    }
+  ],
+  "responsibilities": [
+    "Overall company strategy and vision",
+    "Major product direction decisions",
+    "High-level resource allocation",
+    "Key partnership approvals",
+    "Crisis management and critical decisions"
+  ],
+  "decision_authority": {
+    "budget_approval_limit": 500000,
+    "can_approve_architecture_changes": true,
+    "can_halt_development": true,
+    "requires_approval_for": []
+  },
+  "availability": true,
+  "current_workload": 20,
+  "growth_points": 2800,
+  "personality": {
+    "communication_style": "Strategic and high-level",
+    "decision_speed": "deliberate",
+    "risk_tolerance": "moderate",
+    "collaboration_preference": "executive_briefings"
+  },
+  "learning_history": [
+    {
+      "skill": "ai_strategy",
+      "learned_from": "AI Integration Project",
+      "proficiency_gained": 2,
+      "date": "2024-11-15"
+    }
+  ],
+  "mentorship": {
+    "can_mentor": ["strategic_planning", "business_leadership", "product_vision"],
+    "learning_from": ["emerging_ai_technologies", "web3_integration"]
+  },
+  "created_at": "2025-08-27T22:03:00.000Z",
+  "updated_at": "2025-08-27T22:03:00.000Z"
+}

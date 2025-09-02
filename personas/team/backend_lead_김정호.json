@@ -67,6 +67,15 @@
     }
   },
   
+  "superclaude_commands": [
+    "/SC Backend",
+    "/SC API", 
+    "/SC Database",
+    "/SC Optimize",
+    "/SC Deploy",
+    "/SC Infrastructure"
+  ],
+  
   "interests": {
     "technical": ["시스템 아키텍처", "성능 최적화", "오픈소스 기여"],
     "personal": ["등산", "커피", "기술 서적 읽기", "콘퍼런스 발표"]
