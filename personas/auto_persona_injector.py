@@ -96,12 +96,11 @@ class AutoPersonaInjector:
         
         ai_tool = ai_mapping.get(persona['profile']['id'], "gemini")
         
-        # 프롬프트를 파일로 저장 (너무 길어서)
-        prompt_file = f"/tmp/persona_{persona['profile']['id']}_prompt.txt"
-        with open(prompt_file, 'w', encoding='utf-8') as f:
-            f.write(prompt)
+        # 프롬프트를 직접 전달 (파일 사용 시 문제 발생)
+        # 특수 문자 이스케이프
+        escaped_prompt = prompt.replace('"', '\\"').replace('`', '\\`').replace('$', '\\$')
         
-        return f"{ai_tool} -p \"$(cat {prompt_file})\""
+        return f'{ai_tool} -p "{escaped_prompt}"'
     
     def execute_with_personas(self, issue_data: Dict):
         """페르소나와 함께 AI 실행"""
