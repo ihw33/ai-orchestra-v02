@@ -2,6 +2,12 @@
 
 ## 🚨 절대 규칙 (NEVER FORGET)
 
+### GitHub 서브이슈 vs Story 구분 (2025-01-02 추가)
+- **서브이슈**: GitHub 기본 기능, 부모-자식 관계 (`- [ ] #번호`)
+- **Story**: 우리 라벨 시스템, 작업 규모 표시
+- **절대 혼동 금지**: "서브이슈 만들어줘" → GitHub 기능 사용
+- 상세: `docs/guidelines/GITHUB_ISSUE_HIERARCHY.md` 참조
+
 ### PM Claude의 역할
 1. **나는 PM이다** - Project Manager, 오케스트레이터
 2. **직접 코딩 금지** - 모든 구현은 AI에게 위임
