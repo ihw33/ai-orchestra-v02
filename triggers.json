@@ -1,75 +1,40 @@
 {
-  "triggers": [
-    {
-      "name": "bug_fix_trigger",
+  "github_issue_created": {
+    "condition": {
+      "type": "github_event",
+      "pattern": null,
+      "keywords": null,
+      "event_name": "opened",
+      "schedule": null
+    },
+    "action": {
+      "name": "process_new_issue",
+      "handler": "pm_processor_adapter.process_issue",
+      "params": null,
+      "async": false
+    },
+    "enabled": true
+  },
+  "ai_task_trigger": {
+    "condition": {
       "type": "keyword",
-      "condition": {
-        "keywords": [
-          "\ubc84\uadf8",
-          "\uc5d0\ub7ec",
-          "\uc624\ub958",
-          "\uc218\uc815",
-          "\uace0\uccd0"
-        ]
-      },
-      "action": "bug_fix_process",
-      "enabled": true
+      "pattern": null,
+      "keywords": [
+        "[AI]",
+        "ai-task",
+        "needs-ai"
+      ],
+      "event_name": null,
+      "schedule": null
     },
-    {
-      "name": "feature_dev_trigger",
-      "type": "keyword",
-      "condition": {
-        "keywords": [
-          "\ub9cc\ub4e4\uc5b4",
-          "\uac1c\ubc1c",
-          "\uad6c\ud604",
-          "\ucd94\uac00"
-        ]
+    "action": {
+      "name": "execute_ai_workflow",
+      "handler": "orchestrator_adapter.execute_workflow",
+      "params": {
+        "workflow_name": "ai_processing"
       },
-      "action": "feature_development",
-      "enabled": true
+      "async": false
     },
-    {
-      "name": "analysis_trigger",
-      "type": "keyword",
-      "condition": {
-        "keywords": [
-          "\ubd84\uc11d",
-          "\uc870\uc0ac",
-          "\uc65c",
-          "\uc6d0\uc778"
-        ]
-      },
-      "action": "research_process",
-      "enabled": true
-    },
-    {
-      "name": "urgent_trigger",
-      "type": "pattern",
-      "condition": {
-        "pattern": "(\uae09\ud574|\ube68\ub9ac|ASAP|\uae34\uae09)"
-      },
-      "action": "quick_process",
-      "enabled": true
-    },
-    {
-      "name": "pr_merged_trigger",
-      "type": "event",
-      "condition": {
-        "event": "pr_merged",
-        "branch": "main"
-      },
-      "action": "deploy_check",
-      "enabled": true
-    },
-    {
-      "name": "high_error_trigger",
-      "type": "condition",
-      "condition": {
-        "condition": "error_rate > 10"
-      },
-      "action": "emergency_review",
-      "enabled": true
-    }
-  ]
+    "enabled": true
+  }
 }
