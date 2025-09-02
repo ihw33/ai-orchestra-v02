@@ -36,5 +36,21 @@
       "async": false
     },
     "enabled": true
+  },
+  "pr_review_trigger": {
+    "condition": {
+      "type": "github_event",
+      "pattern": null,
+      "keywords": null,
+      "event_name": "pull_request",
+      "schedule": null
+    },
+    "action": {
+      "name": "execute_code_review",
+      "handler": "code_review_workflow.execute_full_review_cycle",
+      "params": null,
+      "async": false
+    },
+    "enabled": true
   }
 }

@@ -6,6 +6,9 @@
 ```bash
 # 최신 이슈 5개를 확인하고 AI가 필요한 이슈 자동 처리
 python3 -m src.main process-issues
+
+# 특정 이슈 번호를 지정하여 처리 (예: Issue #109)
+python3 -m src.main process-issue 109
 ```
 
 ### 2. 특정 워크플로우 실행
@@ -15,9 +18,18 @@ python3 -m src.main execute-workflow ai_processing
 
 # 이슈 처리 워크플로우 (DAG 실행)
 python3 -m src.main execute-workflow issue_processing
+
+# 코드 리뷰 워크플로우
+python3 -m src.main execute-workflow code_review
 ```
 
-### 3. 이벤트 핸들링
+### 3. PR 코드 리뷰
+```bash
+# 특정 PR 리뷰 실행
+python3 -m src.main review-pr 45
+```
+
+### 4. 이벤트 핸들링
 ```bash
 # GitHub webhook 이벤트 처리
 python3 -m src.main handle-event '{"source": "github", "type": "issue", "action": "opened"}'

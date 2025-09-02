@@ -15,7 +15,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from ports.code_review_port import (
+from src.ports.code_review_port import (
     CodeReviewPort,
     ReviewAutomationPort,
     ReviewAIIntegrationPort,
@@ -27,8 +27,8 @@ from ports.code_review_port import (
     ReviewChecklist,
     ReviewRequest
 )
-from adapters.ai.claude_command_adapter import ClaudeCommandAdapter
-from ports.ai_command_port import AIType, CommandType
+from src.adapters.ai.claude_command_adapter import ClaudeCommandAdapter
+from src.ports.ai_command_port import AIType, CommandType
 
 class GitHubCodeReviewAdapter(CodeReviewPort, ReviewAutomationPort, ReviewAIIntegrationPort):
     """GitHub 코드 리뷰 Adapter"""

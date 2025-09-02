@@ -8,9 +8,9 @@ import os
 from typing import Dict, List
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from adapters.github.code_review_adapter import GitHubCodeReviewAdapter
-from adapters.github.pr_adapter import GitHubPRAdapter
-from ports.code_review_port import (
+from src.adapters.github.code_review_adapter import GitHubCodeReviewAdapter
+from src.adapters.github.pr_adapter import GitHubPRAdapter
+from src.ports.code_review_port import (
     ReviewRequest,
     ReviewStatus,
     ReviewCategory,

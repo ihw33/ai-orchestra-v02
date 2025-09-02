@@ -9,6 +9,7 @@ from typing import Dict, Any
 from src.adapters.pm.pm_processor_adapter import PMProcessorAdapter
 from src.adapters.trigger.trigger_system_adapter import TriggerSystemAdapter
 from src.adapters.orchestration.orchestrator_adapter import OrchestratorAdapter
+from src.workflows.code_review_workflow import CodeReviewWorkflow
 from src.ports.trigger_port import TriggerType, TriggerCondition, TriggerAction, TriggerContext
 from src.ports.orchestration_port import (
     Task, WorkflowDefinition, ExecutionMode
@@ -30,6 +31,7 @@ class AIOrchestra:
         self.pm_processor = PMProcessorAdapter()
         self.trigger_system = TriggerSystemAdapter()
         self.orchestrator = OrchestratorAdapter()
+        self.code_review_workflow = CodeReviewWorkflow()
         self._setup_triggers()
         self._setup_workflows()
     
@@ -60,6 +62,19 @@ class AIOrchestra:
                 name="execute_ai_workflow",
                 handler="orchestrator_adapter.execute_workflow",
                 params={"workflow_name": "ai_processing"}
+            )
+        )
+        
+        # PR 코드 리뷰 트리거
+        self.trigger_system.register_trigger(
+            name="pr_review_trigger",
+            condition=TriggerCondition(
+                type=TriggerType.GITHUB_EVENT,
+                event_name="pull_request"
+            ),
+            action=TriggerAction(
+                name="execute_code_review",
+                handler="code_review_workflow.execute_full_review_cycle"
             )
         )
         
@@ -133,8 +148,37 @@ class AIOrchestra:
             ]
         )
         
+        # 코드 리뷰 워크플로우
+        code_review_workflow = WorkflowDefinition(
+            name="code_review",
+            mode=ExecutionMode.SEQUENTIAL,
+            tasks=[
+                Task(
+                    id="analyze_pr",
+                    name="PR 분석",
+                    executor="code_review",
+                    command="analyze_code_changes"
+                ),
+                Task(
+                    id="perform_review",
+                    name="코드 리뷰 수행",
+                    executor="code_review",
+                    command="perform_review",
+                    dependencies=["analyze_pr"]
+                ),
+                Task(
+                    id="post_feedback",
+                    name="피드백 게시",
+                    executor="code_review",
+                    command="post_review_comments",
+                    dependencies=["perform_review"]
+                )
+            ]
+        )
+        
         self.orchestrator.create_workflow(ai_workflow)
         self.orchestrator.create_workflow(issue_workflow)
+        self.orchestrator.create_workflow(code_review_workflow)
         
         logger.info("워크플로우 설정 완료")
     
@@ -151,6 +195,32 @@ class AIOrchestra:
                     logger.info(f"✅ 이슈 #{issue.number} 처리 완료")
                 else:
                     logger.error(f"❌ 이슈 #{issue.number} 처리 실패: {result.error}")
+    
+    def process_specific_issue(self, issue_number: int):
+        """특정 이슈 번호 처리"""
+        logger.info(f"이슈 #{issue_number} 처리 요청")
+        
+        # 이슈 가져오기
+        issue = self.pm_processor.get_issue_by_number(issue_number)
+        
+        if not issue:
+            logger.error(f"이슈 #{issue_number}를 찾을 수 없습니다")
+            return False
+        
+        # AI 필요 여부 확인
+        if not issue.needs_ai:
+            logger.info(f"이슈 #{issue_number}는 AI 처리가 필요하지 않습니다")
+            return False
+        
+        # 이슈 처리
+        result = self.pm_processor.process_issue(issue)
+        
+        if result.success:
+            logger.info(f"✅ 이슈 #{issue_number} 처리 완료")
+            return True
+        else:
+            logger.error(f"❌ 이슈 #{issue_number} 처리 실패: {result.error}")
+            return False
     
     def handle_event(self, event_data: Dict[str, Any]):
         """이벤트 처리"""
@@ -197,6 +267,19 @@ def main():
             # 최신 이슈 처리
             orchestra.process_latest_issues()
         
+        elif command == "process-issue":
+            # 특정 이슈 처리
+            if len(sys.argv) > 2:
+                issue_number = int(sys.argv[2])
+                print(f"이슈 #{issue_number} 처리 시작...")
+                success = orchestra.process_specific_issue(issue_number)
+                if success:
+                    print(f"✅ 이슈 #{issue_number} 처리 완료")
+                else:
+                    print(f"❌ 이슈 #{issue_number} 처리 실패 또는 AI 불필요")
+            else:
+                print("이슈 번호를 지정하세요")
+        
         elif command == "execute-workflow":
             # 워크플로우 실행
             if len(sys.argv) > 2:
@@ -211,13 +294,29 @@ def main():
             event_data = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}
             orchestra.handle_event(event_data)
         
+        elif command == "review-pr":
+            # PR 코드 리뷰
+            if len(sys.argv) > 2:
+                pr_number = int(sys.argv[2])
+                print(f"PR #{pr_number} 리뷰 시작...")
+                result = orchestra.code_review_workflow.execute_full_review_cycle(pr_number)
+                print(f"리뷰 완료: {result}")
+            else:
+                print("PR 번호를 지정하세요")
+        
         else:
             print(f"알 수 없는 명령: {command}")
-            print("사용법: python main.py [process-issues|execute-workflow|handle-event]")
+            print("사용법: python main.py [process-issues|process-issue|execute-workflow|handle-event|review-pr]")
     
     else:
         print("AI Orchestra v02 - DDD 구조")
-        print("사용법: python main.py [process-issues|execute-workflow|handle-event]")
+        print("사용법: python main.py [process-issues|process-issue|execute-workflow|handle-event|review-pr]")
+        print("\n사용 가능한 명령:")
+        print("  process-issues      - 최신 이슈 5개 처리")
+        print("  process-issue <n>   - 특정 이슈 번호 처리")
+        print("  execute-workflow    - 워크플로우 실행")
+        print("  handle-event        - GitHub 이벤트 처리")
+        print("  review-pr <number>  - PR 코드 리뷰")
         print("\n등록된 워크플로우:")
         for workflow in orchestra.orchestrator.list_workflows():
             print(f"  - {workflow}")

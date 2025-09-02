@@ -26,6 +26,32 @@ class PMProcessorAdapter(PMProcessorPort):
         self.ai_adapter = TransparentReportingAdapter()
         self.github_adapter = GitHubReporterAdapter(repo)
         
+    def get_issue_by_number(self, issue_number: int) -> Optional[Issue]:
+        """특정 번호의 이슈 가져오기"""
+        try:
+            cmd = f"gh issue view {issue_number} -R {self.repo} --json number,title,body,labels,state,createdAt,assignees"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                data = json.loads(result.stdout)
+                issue = Issue(
+                    number=data['number'],
+                    title=data['title'],
+                    body=data.get('body', ''),
+                    labels=[label.get('name', '') for label in data.get('labels', [])],
+                    state=data['state'],
+                    created_at=datetime.fromisoformat(data['createdAt'].replace('Z', '+00:00')),
+                    assignees=[a.get('login', '') for a in data.get('assignees', [])]
+                )
+                return issue
+            else:
+                logger.error(f"이슈 #{issue_number}를 찾을 수 없습니다")
+                return None
+                
+        except Exception as e:
+            logger.error(f"이슈 가져오기 실패: {e}")
+            return None
+    
     def get_latest_issues(self, limit: int = 1) -> List[Issue]:
         """GitHub에서 최신 이슈 가져오기"""
         try:
