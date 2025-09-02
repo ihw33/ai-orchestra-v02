@@ -50,6 +50,21 @@ class Eot:
     status: str = "OK"
 
 
+@dataclass
+class WorkflowRequest:
+    """워크플로우 요청"""
+    workflow_id: str
+    parameters: dict
+
+
+@dataclass
+class WorkflowResult:
+    """워크플로우 결과"""
+    success: bool
+    message: str
+    data: dict
+
+
 def parse_ack(line: str) -> Optional[Ack]:
     """ACK 토큰 파싱 (ANSI 코드 자동 제거)"""
     clean_line = strip_ansi_codes(line)

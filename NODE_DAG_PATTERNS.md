@@ -1,5 +1,88 @@
 # 📊 Node-DAG-Executor 패턴 라이브러리
 
+## 🧪 ACTIONS_LOCAL_TEST 노드 (GitHub Actions 로컬 테스트)
+
+### 노드 타입
+**TESTING** - 로컬 환경에서 GitHub Actions 워크플로우 테스트
+
+### 목적
+GitHub에 푸시하기 전에 Actions 워크플로우를 로컬에서 테스트하여 실패 방지 및 개발 속도 향상
+
+### 실행 시점
+- **자동**: PR 생성 전 워크플로우 변경 감지 시
+- **수동**: Actions 파일 수정 후 검증 필요 시
+- **조건부**: .github/workflows/ 디렉토리 변경 시
+
+### Node-DAG 구조
+```
+[DETECT_WORKFLOW_CHANGE] → [SETUP_ACT] → [RUN_LOCAL_TEST] → [VALIDATE_RESULTS] → [REPORT_STATUS]
+```
+
+### 🔹 노드 정의
+
+#### Node 1: DETECT_WORKFLOW_CHANGE (워크플로우 변경 감지)
+- **타입**: FILE_MONITOR
+- **실행자**: git diff 또는 파일 감시자
+- **입력**: .github/workflows/*.yml
+- **출력**: 변경된 워크플로우 파일 목록
+- **트리거 키워드**: "actions", "workflow", "CI/CD", "자동화"
+
+#### Node 2: SETUP_ACT (Act 설치/검증)
+- **타입**: ENVIRONMENT_SETUP
+- **실행자**: Bash 스크립트
+- **입력**: 시스템 환경
+- **출력**: Act 실행 준비 상태
+- **명령어**:
+  ```bash
+  # Act 설치 확인 및 설치
+  which act || brew install act
+  docker --version || echo "Docker required"
+  ```
+
+#### Node 3: RUN_LOCAL_TEST (로컬 테스트 실행)
+- **타입**: TEST_EXECUTION
+- **실행자**: Act CLI
+- **입력**: 워크플로우 파일 경로
+- **출력**: 테스트 실행 로그
+- **명령어**:
+  ```bash
+  act -W .github/workflows/${WORKFLOW}.yml --dry-run
+  act workflow_dispatch --secret-file .env
+  ```
+
+#### Node 4: VALIDATE_RESULTS (결과 검증)
+- **타입**: VALIDATION
+- **실행자**: 결과 파서
+- **입력**: Act 실행 로그
+- **출력**: 성공/실패 상태, 오류 목록
+
+#### Node 5: REPORT_STATUS (상태 보고)
+- **타입**: NOTIFICATION
+- **실행자**: 리포터
+- **입력**: 검증 결과
+- **출력**: 이슈 코멘트 또는 로컬 리포트
+
+### 실행 조건
+```python
+if ".github/workflows/" in changed_files:
+    execute_dag("ACTIONS_LOCAL_TEST")
+```
+
+### 사용 예시
+```bash
+# PM Claude가 워크플로우 변경 감지 시
+"워크플로우 파일이 변경되었습니다. 로컬 테스트를 실행할까요?"
+→ ACTIONS_LOCAL_TEST 노드 실행
+→ "✅ 로컬 테스트 통과. GitHub에 푸시해도 안전합니다."
+```
+
+### 연관 노드
+- **GITHUB_ACTIONS_DEPLOY**: 성공 시 실제 배포
+- **WORKFLOW_ROLLBACK**: 실패 시 롤백
+- **CI_CD_MONITORING**: 지속적 모니터링
+
+---
+
 ## 🏷️ KEYWORD_ENRICHMENT 노드 (키워드 강화)
 
 ### 노드 타입

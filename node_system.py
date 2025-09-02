@@ -10,6 +10,7 @@ from datetime import datetime
 import subprocess
 import json
 import time
+from evolution_logger import get_logger
 
 class NodeType(Enum):
     """노드 타입 정의 - 실제 작업 기준"""
@@ -40,6 +41,7 @@ class NodeType(Enum):
     RUN_TEST = "run_test"
     CHECK_COVERAGE = "check_coverage"
     VALIDATE_OUTPUT = "validate_output"
+    ACTIONS_LOCAL_TEST = "actions_local_test"  # GitHub Actions 로컬 테스트
     
     # 리뷰/검토
     REVIEW_CODE = "review_code"
@@ -55,6 +57,17 @@ class NodeType(Enum):
     
     # 페르소나 (메타 노드)
     APPLY_PERSONA = "apply_persona"
+    
+    # MCP 서버 노드들
+    MCP_MEMORY_STORE = "mcp_memory_store"         # 메모리 저장
+    MCP_MEMORY_SEARCH = "mcp_memory_search"       # 메모리 검색
+    MCP_CONTEXT7_RESOLVE = "mcp_context7_resolve" # 라이브러리 ID 해석
+    MCP_CONTEXT7_DOCS = "mcp_context7_docs"       # 문서 조회
+    
+    # Context7 고도화 노드들
+    SEARCH_DOCS_REALTIME = "search_docs_realtime"  # 실시간 문서 검색
+    AUTO_LOAD_PROJECT_DOCS = "auto_load_project_docs"  # 프로젝트 문서 자동 로드
+    VALIDATE_API_USAGE = "validate_api_usage"      # API 사용 검증
 
 class NodeStatus(Enum):
     """노드 실행 상태"""
@@ -130,11 +143,14 @@ class AtomicNode:
         """노드 실행"""
         self.start_time = time.time()
         self.state.status = NodeStatus.RUNNING
+        logger = get_logger()  # Evolution Logger 가져오기
         
         try:
             # 입력 검증
             if not self.validate_input():
                 self.state.status = NodeStatus.FAILED
+                # 실패 로깅
+                logger.on_node_complete(self.state.type.value, success=False)
                 return {"error": self.state.error_message}
             
             # AI 실행자로 작업 수행
@@ -144,11 +160,20 @@ class AtomicNode:
             self.state.status = NodeStatus.COMPLETED
             self.state.output_data = result
             
+            # 성공 로깅 및 진화 상태 업데이트
+            evo_result = logger.on_node_complete(self.state.type.value, success=True)
+            
+            # 레벨업 알림
+            if evo_result.get('level_up'):
+                print(f"\n🎉 레벨업! {evo_result['form']} Lv.{evo_result['level']} ({evo_result['stage_name']})\n")
+            
         except Exception as e:
             # 실패 처리
             self.state.status = NodeStatus.FAILED
             self.state.error_message = str(e)
             result = {"error": str(e)}
+            # 실패 로깅
+            logger.on_node_complete(self.state.type.value, success=False)
         
         finally:
             self.end_time = time.time()
@@ -288,6 +313,13 @@ class NodeFactory:
         if "분석" in instruction:
             nodes.append(NodeFactory.create_node(NodeType.ANALYZE_CODE))
             nodes.append(NodeFactory.create_node(NodeType.CREATE_REPORT))
+        
+        if any(keyword in instruction.lower() for keyword in ["workflow", "actions", "ci/cd", ".github"]):
+            nodes.append(NodeFactory.create_node(
+                NodeType.ACTIONS_LOCAL_TEST,
+                executor='act',
+                input_data={'workflow_path': '.github/workflows/'}
+            ))
         
         return nodes
 
