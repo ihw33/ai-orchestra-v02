@@ -57,3 +57,26 @@ class CacheSystem:
         if self._access_times:
             lru_key = min(self._access_times, key=self._access_times.get)
             self.delete(lru_key)
+
+    
+# Devil's Advocate 피드백 반영
+import threading
+
+class ImprovedCacheSystem(CacheSystem):
+    def __init__(self, max_size: int = 1000):
+        super().__init__(max_size)
+        self._start_cleanup_thread()
+    
+    def _start_cleanup_thread(self):
+        """백그라운드 TTL 정리"""
+        def cleanup():
+            while True:
+                time.sleep(60)  # 1분마다
+                with self._lock:
+                    expired = [k for k in self._ttl_map 
+                              if not self._check_ttl(k)]
+                    for key in expired:
+                        self.delete(key)
+        
+        thread = threading.Thread(target=cleanup, daemon=True)
+        thread.start()
